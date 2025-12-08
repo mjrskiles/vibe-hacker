@@ -1,0 +1,49 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/prime.sh --light",
+            "timeout": 10000
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '=== PRE-COMPACTION REMINDER ===\nContext is about to be compacted. After compaction, use /prime to restore project context.\n=== END REMINDER ==='",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/check-legacy-cruft.sh --warn-only",
+            "timeout": 10000
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Review the assistant's recent work for GREENFIELD VIOLATIONS. This is a prototype project with ZERO users.\n\nViolations include:\n- Adding deprecation comments (// deprecated, @deprecated, # legacy, etc.)\n- Keeping old code 'for backwards compatibility'\n- Re-exporting removed types or renaming unused variables to _unused\n- Documenting 'the old way' or migration paths\n- Adding compatibility shims\n\nIf any violations found, respond with:\n{\"decision\": \"approve\", \"reason\": \"WARNING - GREENFIELD VIOLATION: [specific issue]. Consider removing deprecated code/comments - there are no users to migrate.\"}\n\nIf no violations, respond with:\n{\"decision\": \"approve\", \"reason\": \"No greenfield violations detected\"}",
+            "timeout": 30000
+          }
+        ]
+      }
+    ]
+  }
+}

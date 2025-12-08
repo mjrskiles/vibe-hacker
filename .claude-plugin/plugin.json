@@ -1,0 +1,21 @@
+{
+  "name": "firmware-hacker",
+  "version": "0.1.0",
+  "description": "A Claude Code plugin for firmware hacking, embedded development, and greenfield project workflows",
+  "author": {
+    "name": "Michael Skiles",
+    "email": "mike@mskiles.com",
+    "url": "https://mskiles.com/about"
+  },
+  "homepage": "https://github.com/mjrskiles/firmware-hacker",
+  "repository": "https://github.com/mjrskiles/firmware-hacker",
+  "license": "MIT",
+  "keywords": [
+    "firmware",
+    "embedded",
+    "greenfield",
+    "priming",
+    "context-management"
+  ],
+  "hooks": "./hooks/hooks.json"
+}

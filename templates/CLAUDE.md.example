@@ -1,0 +1,23 @@
+# Project Name - Claude Code Guidelines
+
+## Project Status: GREENFIELD / PROTOTYPE
+
+This project is **unreleased** with **zero external users**. Development is rapid iteration.
+
+## No Backwards Compatibility
+
+When refactoring or making changes:
+
+- **DELETE old code entirely** - do not deprecate, comment out, or keep "for reference"
+- **Do NOT add backwards-compatibility shims**, re-exports, or migration helpers
+- **Do NOT document "the old way"** - there are no users to migrate
+- **If something is unused after a change, remove it completely**
+- **Prefer clean breaks over gentle transitions**
+
+## Project-Specific Notes
+
+<!-- Add your project-specific guidelines here -->
+
+- Target platform:
+- Build system:
+- Key constraints:
