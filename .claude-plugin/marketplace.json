@@ -1,0 +1,17 @@
+{
+  "name": "mjrskiles-plugins",
+  "description": "Claude Code plugins by Michael Skiles",
+  "owner": {
+    "name": "Michael Skiles",
+    "email": "mike@mskiles.com",
+    "url": "https://github.com/mjrskiles"
+  },
+  "repository": "https://github.com/mjrskiles/firmware-hacker",
+  "plugins": [
+    {
+      "name": "firmware-hacker",
+      "source": ".",
+      "description": "Claude Code plugin for firmware hacking and greenfield workflows"
+    }
+  ]
+}
