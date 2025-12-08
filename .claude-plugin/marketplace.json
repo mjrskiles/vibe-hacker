@@ -10,7 +10,7 @@
   "plugins": [
     {
       "name": "firmware-hacker",
-      "source": ".",
+      "source": "./",
       "description": "Claude Code plugin for firmware hacking and greenfield workflows"
     }
   ]

@@ -1,6 +1,6 @@
 {
   "name": "firmware-hacker",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A Claude Code plugin for firmware hacking, embedded development, and greenfield project workflows",
   "author": {
     "name": "Michael Skiles",
@@ -15,7 +15,8 @@
     "embedded",
     "greenfield",
     "priming",
-    "context-management"
-  ],
-  "hooks": "./hooks/hooks.json"
+    "context-management",
+    "code-quality",
+    "audit"
+  ]
 }

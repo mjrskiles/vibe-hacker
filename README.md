@@ -4,6 +4,71 @@ A Claude Code plugin for firmware hacking, embedded development, and greenfield 
 
 ## Features
 
+### Klaus - Firmware Quality Auditor
+
+Klaus is a pedantic embedded systems expert who audits your code for quality issues. Invoke him after major changes or to review unfamiliar codebases.
+
+**Audit types:**
+- `memory` - RAM, stack, globals, allocation patterns
+- `timing` - ISRs, blocking calls, timeouts, real-time concerns
+- `safety` - Error handling, defensive coding, robustness
+- `style` - Code organization, naming, documentation
+- `full` - Comprehensive audit (all of the above)
+
+```bash
+/klaus memory    # Check for memory issues
+/klaus full      # Full codebase audit
+```
+
+Klaus checks for common embedded anti-patterns:
+- Dynamic allocation (`malloc` on embedded)
+- Floating point on 8-bit MCUs
+- Fat ISRs (should set flag and exit)
+- Unbounded busy-waits
+- Missing timeouts on blocking calls
+
+### Librodotus - Documentation Quality Auditor
+
+Librodotus is a scholarly documentation purist who ensures your docs are useful, scannable, and accurate. Named after Herodotus—but unlike his namesake, he never embellishes.
+
+**Audit types:**
+- `readme` - README scannability, 30-second test
+- `code` - Source code comments, API documentation
+- `architecture` - System docs, decision records
+- `freshness` - Staleness check, outdated references
+- `full` - Comprehensive audit (all of the above)
+
+```bash
+/librodotus readme    # Audit README quality
+/librodotus full      # Full documentation audit
+```
+
+Librodotus philosophy:
+- "A README should answer 'what is this?' in 10 seconds."
+- "The best comment explains *why*, not *what*."
+- "Tables are your friend. Walls of text are your enemy."
+
+### Shawn - Educational Mentor
+
+Shawn is a warm mentor who views projects through an educator's lens. He asks: "What makes this teachable? How can we spark curiosity while building competence?"
+
+**Review types:**
+- `onboarding` - First five minutes, setup friction, initial success
+- `concepts` - Clarity, progression, mental models
+- `examples` - Quality, runnability, scaffolding
+- `depth` - Challenge gradient, growth pathways
+- `full` - Comprehensive educational review
+
+```bash
+/shawn onboarding   # How's the first experience?
+/shawn full         # Full educational review
+```
+
+Shawn's approach:
+- "Can someone see themselves succeeding here?"
+- "What's the first 'aha!' moment, and how quickly can we get there?"
+- "Is the complexity essential, or accidental?"
+
 ### Context Priming
 
 Automatically prime Claude with project context on session start and after compaction.
@@ -79,8 +144,15 @@ After installing the plugin, configure your project:
 firmware-hacker/
 ├── .claude-plugin/
 │   └── plugin.json         # Plugin manifest
+├── agents/
+│   ├── klaus.md            # Firmware quality auditor
+│   ├── librodotus.md       # Documentation quality auditor
+│   └── shawn.md            # Educational mentor
 ├── commands/
-│   └── prime.md            # /prime slash command
+│   ├── klaus.md            # /klaus command
+│   ├── librodotus.md       # /librodotus command
+│   ├── prime.md            # /prime command
+│   └── shawn.md            # /shawn command
 ├── hooks/
 │   └── hooks.json          # Hook configuration
 ├── scripts/
@@ -102,6 +174,17 @@ firmware-hacker/
 | Command | Description |
 |---------|-------------|
 | `/prime` | Load full project context from prime.json |
+| `/klaus [type]` | Firmware quality audit (memory\|timing\|safety\|style\|full) |
+| `/librodotus [type]` | Documentation audit (readme\|code\|architecture\|freshness\|full) |
+| `/shawn [type]` | Educational review (onboarding\|concepts\|examples\|depth\|full) |
+
+## Agents
+
+| Agent | Description |
+|-------|-------------|
+| `klaus` | Pedantic embedded firmware quality auditor |
+| `librodotus` | Scholarly documentation quality auditor |
+| `shawn` | Warm educational mentor focused on learnability |
 
 ## Hooks
 
