@@ -21,6 +21,30 @@ if [[ "${1:-}" == "--warn-only" ]]; then
     shift
 fi
 
+# Check if greenfield mode is enabled via config file
+is_greenfield_enabled() {
+    local config_file="${CLAUDE_PROJECT_DIR:-.}/.claude/firmware-hacker.json"
+
+    if [[ -f "$config_file" ]]; then
+        local enabled
+        enabled=$(jq -r '.greenfield_mode // false' "$config_file" 2>/dev/null || echo "false")
+        [[ "$enabled" == "true" ]]
+    else
+        return 1
+    fi
+}
+
+# Exit early if greenfield mode is not enabled
+if ! is_greenfield_enabled; then
+    cat << 'EOF'
+{
+    "decision": "approve",
+    "reason": "Greenfield mode not enabled"
+}
+EOF
+    exit 0
+fi
+
 # Patterns that indicate legacy/deprecation cruft
 CRUFT_PATTERNS=(
     '// deprecated'

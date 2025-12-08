@@ -73,32 +73,49 @@ Shawn's approach:
 
 Automatically prime Claude with project context on session start and after compaction.
 
-- **SessionStart hook**: Light priming shows available files
+- **SessionStart hook**: Light priming shows available files and greenfield status
 - **PreCompact hook**: Reminds to re-prime after context compaction
 - **/prime command**: Full priming loads all configured files
 
-Projects configure priming via `.claude/prime.json`:
-
-```json
-{
-  "files": ["README.md", "docs/ARCHITECTURE.md"],
-  "globs": ["docs/planning/action-plans/*.md"],
-  "instructions": "Focus on active work in progress."
-}
-```
-
 ### Greenfield Mode
 
-Prevents backwards-compatibility cruft in prototype/unreleased projects.
+Optional mode that prevents backwards-compatibility cruft in prototype/unreleased projects. Enable per-project via config.
 
+When enabled:
 - **PostToolUse hook**: Warns when edited files contain legacy patterns
-- **Stop hook**: Haiku reviews session for greenfield violations
+- **Stop hook**: Reminds about greenfield rules at session end
 
 Detected patterns:
 - Deprecation comments (`// deprecated`, `@deprecated`, `# legacy`)
 - Backwards-compatibility shims and re-exports
 - Migration documentation ("the old way")
 - Unused variable renaming (`_unused` prefix)
+
+### Configuration
+
+All plugin settings are configured via `.claude/firmware-hacker.json`:
+
+```json
+{
+  "greenfield_mode": true,
+  "priming": {
+    "files": ["README.md", "docs/ARCHITECTURE.md"],
+    "globs": ["docs/planning/action-plans/*.md"],
+    "instructions": "Focus on active work in progress."
+  }
+}
+```
+
+| Setting | Type | Default | Description |
+|---------|------|---------|-------------|
+| `greenfield_mode` | boolean | `false` | Enable greenfield mode checks |
+| `priming.files` | string[] | `[]` | Files to load during priming |
+| `priming.globs` | string[] | `[]` | Glob patterns for additional files |
+| `priming.instructions` | string | `""` | Custom instructions shown during priming |
+
+## Requirements
+
+- [jq](https://jqlang.github.io/jq/) - JSON processor (used by priming and greenfield scripts)
 
 ## Installation
 
@@ -126,10 +143,10 @@ Coming soon.
 
 After installing the plugin, configure your project:
 
-1. **Create prime.json** (copy from `templates/prime.json.example`):
+1. **Create firmware-hacker.json** (copy from `templates/firmware-hacker.json.example`):
    ```bash
-   cp /path/to/firmware-hacker/templates/prime.json.example .claude/prime.json
-   # Edit to list your project's key files
+   cp /path/to/firmware-hacker/templates/firmware-hacker.json.example .claude/firmware-hacker.json
+   # Edit to configure priming files and greenfield mode
    ```
 
 2. **Create CLAUDE.md** (optional, copy from `templates/CLAUDE.md.example`):
@@ -156,11 +173,12 @@ firmware-hacker/
 ├── hooks/
 │   └── hooks.json          # Hook configuration
 ├── scripts/
-│   ├── check-legacy-cruft.sh   # Legacy pattern detector
-│   └── prime.sh                # Priming script
+│   ├── check-legacy-cruft.sh       # Legacy pattern detector
+│   ├── greenfield-stop-hook.sh     # Greenfield stop hook
+│   └── prime.sh                    # Priming script
 ├── templates/
-│   ├── CLAUDE.md.example       # Greenfield guidelines template
-│   └── prime.json.example      # Priming config template
+│   ├── CLAUDE.md.example           # Project guidelines template
+│   └── firmware-hacker.json.example # Plugin config template
 └── docs/
     ├── ARCHITECTURE.md
     └── planning/
@@ -173,7 +191,7 @@ firmware-hacker/
 
 | Command | Description |
 |---------|-------------|
-| `/prime` | Load full project context from prime.json |
+| `/prime` | Load full project context from firmware-hacker.json |
 | `/klaus [type]` | Firmware quality audit (memory\|timing\|safety\|style\|full) |
 | `/librodotus [type]` | Documentation audit (readme\|code\|architecture\|freshness\|full) |
 | `/shawn [type]` | Educational review (onboarding\|concepts\|examples\|depth\|full) |
@@ -190,10 +208,10 @@ firmware-hacker/
 
 | Event | Type | Behavior |
 |-------|------|----------|
-| SessionStart | command | Light priming (file list) |
+| SessionStart | command | Light priming (file list, greenfield status) |
 | PreCompact | command | Re-prime reminder |
-| PostToolUse (Edit\|Write) | command | Legacy cruft warning |
-| Stop | prompt (Haiku) | Greenfield violation review |
+| PostToolUse (Edit\|Write) | command | Legacy cruft warning (if greenfield enabled) |
+| Stop | command | Greenfield reminder (if greenfield enabled) |
 
 ## Documentation
 
