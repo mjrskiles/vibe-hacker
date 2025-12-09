@@ -1,6 +1,8 @@
 # AP-NNN: Title
 
-**Status: Proposed | In Progress | Complete | Abandoned**
+## Status
+
+Planned | In Progress | Complete
 
 ## Overview
 
@@ -8,44 +10,41 @@ Brief description of what this action plan accomplishes.
 
 ## Scope
 
-What this action plan covers:
-- Item 1
-- Item 2
+What is included and excluded from this plan.
 
-**Not in scope** (future action plans):
-- Item 1
-- Item 2
-
-## Implementation Steps
+## Implementation Phases
 
 ### Phase 1: Description
 
-Detailed steps for this phase.
+- [ ] Task 1
+- [ ] Task 2
 
 ### Phase 2: Description
 
-Detailed steps for this phase.
+- [ ] Task 1
+- [ ] Task 2
 
-## File Changes Summary
+## File Changes
 
-| File | Action | Description |
+| File | Change | Description |
 |------|--------|-------------|
 | `path/to/file` | Create/Modify/Delete | Description |
 
 ## Testing Strategy
 
-How to verify this work is complete and correct.
+How to verify the implementation is correct.
 
 ## Success Criteria
 
 - [ ] Criterion 1
 - [ ] Criterion 2
+- [ ] All tests pass
 - [ ] Documentation updated
 
 ## Dependencies
 
-Prerequisites or blockers.
+Prerequisites and blocking items.
 
-## Notes
+## Estimated Scope
 
-Any additional context or considerations.
+Rough estimate of lines of code or effort level.

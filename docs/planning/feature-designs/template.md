@@ -22,20 +22,20 @@ High-level description of the approach.
 
 Any changes to public APIs, function signatures, or module interfaces.
 
-```bash
-# Example command signatures
+```c
+// Example function signatures
 ```
 
 ### Implementation Details
 
 Step-by-step breakdown of how the feature works.
 
-### Configuration
+### Data Structures
 
-Any new configuration options or settings.
+Any new structs, enums, or constants.
 
-```json
-// Example configuration
+```c
+// Example data structures
 ```
 
 ### Error Handling
@@ -52,7 +52,7 @@ List of files to be created, modified, or deleted.
 
 | File | Change | Description |
 |------|--------|-------------|
-| `path/to/file` | Create/Modify/Delete | Description of changes |
+| `path/to/file.c` | Modify | Description of changes |
 
 ## Dependencies
 
