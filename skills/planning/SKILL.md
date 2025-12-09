@@ -15,6 +15,34 @@ Manage planning documents with proper structure, numbering, and lifecycle.
 | ADR | Architecture Decision Record - captures a decision and its context | `NNN-slug.md` |
 | FDP | Feature Design Proposal - designs a feature before implementation | `FDP-NNN-slug.md` |
 | AP | Action Plan - tracks implementation steps for a task | `AP-NNN-slug.md` |
+| Roadmap | Project goals and vision (immediate, medium, long term) | `roadmap.md` |
+
+## Roadmap
+
+The roadmap is a single markdown file tracking project goals at different time horizons:
+
+- **Immediate** (This Week) - Current focus
+- **Medium Term** (This Month) - Coming up next
+- **Long Term** (This Quarter+) - Vision and direction
+- **Recently Completed** - What was just finished
+
+### Initialize Roadmap
+
+```bash
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/init-roadmap.py
+```
+
+This creates `<planning_root>/roadmap.md` from the template.
+
+### Keeping it Updated
+
+A **PreCompact hook** reminds you to update the roadmap before context compaction:
+1. Move completed items to "Recently Completed"
+2. Update "Immediate" goals based on progress
+3. Adjust priorities as needed
+4. Update the "Last updated" date
+
+The roadmap is human-editable and should be updated regularly to reflect project state.
 
 ## Configuration
 
@@ -144,5 +172,6 @@ Templates are in `${CLAUDE_PLUGIN_ROOT}/skills/planning/templates/`:
 - `adr.md` - Architecture Decision Record
 - `fdp.md` - Feature Design Proposal
 - `action-plan.md` - Action Plan
+- `roadmap.md` - Project Roadmap
 
-The `new.py` script automatically uses the correct template.
+The `new.py` script automatically uses the correct template. Use `init-roadmap.py` to initialize the roadmap.

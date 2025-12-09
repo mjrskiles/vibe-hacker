@@ -126,7 +126,7 @@ Configure protection rules in `vibe-hacker.json`:
 
 ### Planning Skill
 
-Manage planning documents (ADRs, FDPs, Action Plans) with proper numbering and lifecycle.
+Manage planning documents (ADRs, FDPs, Action Plans, Roadmap) with proper numbering and lifecycle.
 
 **Document types**:
 
@@ -135,12 +135,18 @@ Manage planning documents (ADRs, FDPs, Action Plans) with proper numbering and l
 | ADR | Architecture Decision Record | `001-use-postgresql.md` |
 | FDP | Feature Design Proposal | `FDP-001-auth-system.md` |
 | AP | Action Plan | `AP-001-implement-login.md` |
+| Roadmap | Project goals (immediate/medium/long term) | `roadmap.md` |
 
 **Creating documents** (auto-numbered):
 ```bash
 python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/new.py adr "Use PostgreSQL"
 python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/new.py fdp "User Authentication"
 python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/new.py ap "Implement login"
+```
+
+**Initialize roadmap**:
+```bash
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/init-roadmap.py
 ```
 
 **Listing documents**:
@@ -156,6 +162,8 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/archive.py ADR-001
 ```
 
 The planning root is configurable via `protected_paths.planning_root` (default: `docs/planning`).
+
+A **PreCompact hook** reminds you to update the roadmap before context compaction.
 
 See [skills/planning/SKILL.md](skills/planning/SKILL.md) for full documentation.
 
@@ -253,6 +261,7 @@ vibe-hacker/
 │   ├── check-legacy-cruft.sh       # Legacy pattern detector
 │   ├── check-protected-paths.sh    # Protected paths enforcer
 │   ├── greenfield-stop-hook.sh     # Greenfield stop hook
+│   ├── precompact-roadmap.sh       # Roadmap update reminder
 │   └── prime.sh                    # Priming script
 ├── skills/
 │   └── planning/
@@ -261,11 +270,13 @@ vibe-hacker/
 │       │   ├── new.py              # Create new planning docs
 │       │   ├── archive.py          # Archive completed docs
 │       │   ├── list.py             # List planning docs
+│       │   ├── init-roadmap.py     # Initialize project roadmap
 │       │   └── config.py           # Shared configuration
 │       └── templates/
 │           ├── adr.md              # ADR template
 │           ├── fdp.md              # FDP template
-│           └── action-plan.md      # Action plan template
+│           ├── action-plan.md      # Action plan template
+│           └── roadmap.md          # Roadmap template
 ├── templates/
 │   ├── CLAUDE.md.example           # Project guidelines template
 │   └── vibe-hacker.json.example    # Plugin config template
@@ -299,6 +310,7 @@ vibe-hacker/
 | Event | Type | Behavior |
 |-------|------|----------|
 | SessionStart | command | Full priming (on start and after compaction) |
+| PreCompact | command | Roadmap update reminder |
 | PreToolUse (Edit\|Write) | command | Protected paths enforcement |
 | PostToolUse (Edit\|Write) | command | Legacy cruft warning (if greenfield enabled) |
 | Stop | command | Greenfield reminder (if greenfield enabled) |

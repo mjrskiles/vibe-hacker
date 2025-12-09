@@ -12,30 +12,31 @@ Vibe Hacker is a Claude Code plugin that provides four core capabilities:
 4. **Planning Skill** - Manage ADRs, FDPs, and Action Plans with proper lifecycle
 
 ```
-┌──────────────────────────────────────────────────────────────────────┐
-│                           Claude Code                                 │
-├──────────────────────────────────────────────────────────────────────┤
-│  Hooks System                                                         │
-│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐     │
-│  │SessionStart │ │ PreToolUse  │ │ PostToolUse │ │    Stop     │     │
-│  │   (prime)   │ │ (protect)   │ │(cruft check)│ │  (review)   │     │
-│  └──────┬──────┘ └──────┬──────┘ └──────┬──────┘ └──────┬──────┘     │
-│         │               │               │               │             │
-│         ▼               ▼               ▼               ▼             │
-│  ┌────────────────────────────────────────────────────────────┐      │
-│  │                    Vibe Hacker Plugin                       │      │
-│  │  ┌──────────┐ ┌────────────────┐ ┌──────────────┐ ┌──────┐ │      │
-│  │  │ prime.sh │ │check-protected-│ │check-legacy- │ │Haiku │ │      │
-│  │  │          │ │   paths.sh     │ │  cruft.sh    │ │Prompt│ │      │
-│  │  └────┬─────┘ └───────┬────────┘ └──────┬───────┘ └──┬───┘ │      │
-│  └───────┼───────────────┼─────────────────┼────────────┼─────┘      │
-│          │               │                 │            │             │
-│          ▼               ▼                 ▼            ▼             │
-│  ┌─────────────┐ ┌─────────────┐   ┌─────────────┐ ┌──────────┐      │
-│  │vibe-hacker  │ │   Config    │   │Edited Files │ │Transcript│      │
-│  │   .json     │ │   Rules     │   │             │ │          │      │
-│  └─────────────┘ └─────────────┘   └─────────────┘ └──────────┘      │
-└──────────────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────────┐
+│                              Claude Code                                    │
+├────────────────────────────────────────────────────────────────────────────┤
+│  Hooks System                                                               │
+│  ┌───────────┐ ┌───────────┐ ┌───────────┐ ┌───────────┐ ┌───────────┐    │
+│  │  Session  │ │    Pre    │ │    Pre    │ │   Post    │ │   Stop    │    │
+│  │   Start   │ │  Compact  │ │  ToolUse  │ │  ToolUse  │ │           │    │
+│  │  (prime)  │ │ (roadmap) │ │ (protect) │ │  (cruft)  │ │ (review)  │    │
+│  └─────┬─────┘ └─────┬─────┘ └─────┬─────┘ └─────┬─────┘ └─────┬─────┘    │
+│        │             │             │             │             │           │
+│        ▼             ▼             ▼             ▼             ▼           │
+│  ┌──────────────────────────────────────────────────────────────────┐     │
+│  │                       Vibe Hacker Plugin                          │     │
+│  │  ┌────────┐ ┌──────────┐ ┌─────────────┐ ┌────────────┐ ┌──────┐ │     │
+│  │  │prime.sh│ │precompact│ │check-protect│ │check-legacy│ │Haiku │ │     │
+│  │  │        │ │-roadmap  │ │ ed-paths.sh │ │ -cruft.sh  │ │Prompt│ │     │
+│  │  └───┬────┘ └────┬─────┘ └──────┬──────┘ └─────┬──────┘ └──┬───┘ │     │
+│  └──────┼───────────┼──────────────┼──────────────┼───────────┼─────┘     │
+│         │           │              │              │           │            │
+│         ▼           ▼              ▼              ▼           ▼            │
+│  ┌───────────┐ ┌──────────┐ ┌───────────┐ ┌───────────┐ ┌──────────┐     │
+│  │vibe-hacker│ │ roadmap  │ │  Config   │ │  Edited   │ │Transcript│     │
+│  │   .json   │ │   .md    │ │   Rules   │ │   Files   │ │          │     │
+│  └───────────┘ └──────────┘ └───────────┘ └───────────┘ └──────────┘     │
+└────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ## Components
@@ -64,6 +65,7 @@ Configures hooks:
 |------|---------|------|---------------|
 | SessionStart | (all) | command | `prime.sh --full` |
 | SessionStart | compact | command | `prime.sh --full` (re-prime after compaction) |
+| PreCompact | (all) | command | `precompact-roadmap.sh` (roadmap reminder) |
 | PreToolUse | Edit\|Write | command | `check-protected-paths.sh` |
 | PostToolUse | Edit\|Write | command | `check-legacy-cruft.sh --warn-only` |
 | Stop | (all) | prompt | Haiku greenfield review |
@@ -158,21 +160,23 @@ docs/                     →  Scan for markdown files
 
 **Location**: `skills/planning/`
 
-**Purpose**: Manage planning documents (ADRs, FDPs, Action Plans) with proper numbering and lifecycle.
+**Purpose**: Manage planning documents (ADRs, FDPs, Action Plans, Roadmap) with proper numbering and lifecycle.
 
 **Components**:
 - `SKILL.md` - Skill documentation (auto-invoked when guided tier suggests it)
 - `scripts/new.py` - Create new documents with auto-numbering
 - `scripts/archive.py` - Move completed documents to archive
 - `scripts/list.py` - List active documents with status
+- `scripts/init-roadmap.py` - Initialize project roadmap from template
 - `scripts/config.py` - Shared configuration utilities
-- `templates/` - Document templates
+- `templates/` - Document templates (ADR, FDP, AP, Roadmap)
 
 **Document Lifecycle**:
 ```
-ADR:  Proposed → Accepted → [Superseded | Deprecated]
-FDP:  Proposed → In Progress → [Implemented | Abandoned]
-AP:   Active → [Completed | Abandoned]
+ADR:     Proposed → Accepted → [Superseded | Deprecated]
+FDP:     Proposed → In Progress → [Implemented | Abandoned]
+AP:      Active → [Completed | Abandoned]
+Roadmap: Living document (updated before compaction)
 ```
 
 ### Greenfield Review (Stop Hook)
