@@ -5,7 +5,7 @@
 
 set -euo pipefail
 
-config_file="${CLAUDE_PROJECT_DIR:-.}/.claude/firmware-hacker.json"
+config_file="${CLAUDE_PROJECT_DIR:-.}/.claude/vibe-hacker.json"
 
 # Check if greenfield mode is enabled
 if [[ -f "$config_file" ]]; then

@@ -23,7 +23,7 @@ fi
 
 # Check if greenfield mode is enabled via config file
 is_greenfield_enabled() {
-    local config_file="${CLAUDE_PROJECT_DIR:-.}/.claude/firmware-hacker.json"
+    local config_file="${CLAUDE_PROJECT_DIR:-.}/.claude/vibe-hacker.json"
 
     if [[ -f "$config_file" ]]; then
         local enabled

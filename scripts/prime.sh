@@ -7,14 +7,14 @@
 #   prime.sh --full     # Full priming (/prime command) - read all files
 #   prime.sh --check    # Just check what would be primed (dry run)
 #
-# Config location: .claude/firmware-hacker.json
+# Config location: .claude/vibe-hacker.json
 # Fallback chain:
-#   1. .claude/firmware-hacker.json (if exists, use priming config)
+#   1. .claude/vibe-hacker.json (if exists, use priming config)
 #   2. .claude/CLAUDE.md (if no config)
 #   3. README.md (if no CLAUDE.md)
 #   4. docs/ directory (scan for key files)
 #
-# firmware-hacker.json format:
+# vibe-hacker.json format:
 # {
 #   "greenfield_mode": true,
 #   "priming": {
@@ -47,7 +47,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-CONFIG_JSON=".claude/firmware-hacker.json"
+CONFIG_JSON=".claude/vibe-hacker.json"
 CLAUDE_MD=".claude/CLAUDE.md"
 README="README.md"
 DOCS_DIR="docs"
@@ -84,9 +84,9 @@ if [[ -f "$CONFIG_JSON" ]]; then
     [[ "$gf_enabled" == "true" ]] && GREENFIELD_MODE="enabled"
 fi
 
-# Strategy 1: Use firmware-hacker.json if it exists
+# Strategy 1: Use vibe-hacker.json if it exists
 if [[ -f "$CONFIG_JSON" ]]; then
-    log "${CYAN}Found firmware-hacker.json - using configured priming${NC}"
+    log "${CYAN}Found vibe-hacker.json - using configured priming${NC}"
 
     # Extract instructions from priming section
     INSTRUCTIONS=$(jq -r '.priming.instructions // empty' "$CONFIG_JSON" 2>/dev/null || true)
@@ -107,7 +107,7 @@ if [[ -f "$CONFIG_JSON" ]]; then
 
 # Strategy 2: Fall back to CLAUDE.md
 elif [[ -f "$CLAUDE_MD" ]]; then
-    log "${CYAN}No firmware-hacker.json - falling back to CLAUDE.md${NC}"
+    log "${CYAN}No vibe-hacker.json - falling back to CLAUDE.md${NC}"
     FILES_TO_READ+=("$CLAUDE_MD")
 
     # Also grab README if it exists
@@ -126,7 +126,7 @@ elif [[ -d "$DOCS_DIR" ]]; then
     done < <(find "$DOCS_DIR" -name "*.md" -type f 2>/dev/null | head -10)
 else
     log "${YELLOW}No priming sources found. Consider creating:${NC}"
-    log "  - .claude/firmware-hacker.json (recommended)"
+    log "  - .claude/vibe-hacker.json (recommended)"
     log "  - .claude/CLAUDE.md"
     log "  - README.md"
 fi

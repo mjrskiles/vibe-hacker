@@ -6,12 +6,12 @@
     "email": "mike@mskiles.com",
     "url": "https://github.com/mjrskiles"
   },
-  "repository": "https://github.com/mjrskiles/firmware-hacker",
+  "repository": "https://github.com/mjrskiles/vibe-hacker",
   "plugins": [
     {
-      "name": "firmware-hacker",
+      "name": "vibe-hacker",
       "source": "./",
-      "description": "Claude Code plugin for firmware hacking and greenfield workflows"
+      "description": "Claude Code plugin for vibe hacking and greenfield workflows"
     }
   ]
 }
