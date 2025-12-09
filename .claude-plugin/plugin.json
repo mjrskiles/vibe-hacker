@@ -1,7 +1,7 @@
 {
   "name": "vibe-hacker",
   "version": "0.2.1",
-  "description": "A Claude Code plugin for firmware hacking, embedded development, and greenfield project workflows",
+  "description": "A Claude Code plugin for hacking, development workflows, and greenfield projects",
   "author": {
     "name": "Michael Skiles",
     "email": "mike@mskiles.com",
@@ -11,12 +11,11 @@
   "repository": "https://github.com/mjrskiles/vibe-hacker",
   "license": "MIT",
   "keywords": [
-    "firmware",
-    "embedded",
     "greenfield",
     "priming",
     "context-management",
     "code-quality",
-    "audit"
+    "audit",
+    "agents"
   ]
 }

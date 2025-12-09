@@ -9,6 +9,43 @@
       "docs/planning/decision-records/*.md",
       "docs/planning/action-plans/AP-*-*.md"
     ],
-    "instructions": "Prime your context by reading the files mentioned here. You are helping Michael work on Eurorack firmware. In addition to the documentation, you should browse the source code and read any pertinent files."
+    "instructions": "Prime your context by reading the files mentioned here. You are helping Michael work on the vibe-hacker plugin. In addition to the documentation, you should browse the source code and read any pertinent files."
+  },
+  "protected_paths": {
+    "rules": [
+      {
+        "pattern": "docs/planning/*/archive/**",
+        "tier": "readonly",
+        "message": "Archived documents are read-only historical records. They preserve the state of decisions/plans at a point in time."
+      },
+      {
+        "pattern": "docs/planning/decision-records/[0-9][0-9][0-9]-*.md",
+        "tier": "guided",
+        "skill": "planning",
+        "message": "ADRs should be managed through the planning skill to maintain proper structure and numbering."
+      },
+      {
+        "pattern": "docs/planning/feature-designs/FDP-*.md",
+        "tier": "guided",
+        "skill": "planning",
+        "message": "FDPs should be managed through the planning skill to maintain proper structure and numbering."
+      },
+      {
+        "pattern": "docs/planning/action-plans/AP-*.md",
+        "tier": "guided",
+        "skill": "planning",
+        "message": "Action plans should be managed through the planning skill to maintain proper structure and numbering."
+      },
+      {
+        "pattern": "templates/**",
+        "tier": "remind",
+        "message": "This is a template file. Ensure placeholders like ${VARIABLE} are preserved."
+      },
+      {
+        "pattern": "skills/planning/templates/**",
+        "tier": "remind",
+        "message": "This is a planning template. Ensure placeholders like ${NUMBER}, ${TITLE}, ${DATE} are preserved."
+      }
+    ]
   }
 }

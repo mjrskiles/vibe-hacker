@@ -1,4 +1,4 @@
-# Firmware Hacker - Claude Code Guidelines
+# Vibe Hacker - Claude Code Guidelines
 
 ## Project Status: GREENFIELD / PROTOTYPE
 
@@ -29,8 +29,8 @@ In prototype/greenfield projects, "helpful" backwards-compatibility code creates
 3. Update any imports/references to use the new code
 4. Do not leave traces of the old approach in comments or docs
 
-## Firmware-Specific Notes
+## Notes
 
-- This is a Claude Code plugin for firmware analysis and hacking
-- Target audience: developers working with embedded systems, IoT devices, binary analysis
-- Stack: TBD (evolving)
+- This is a Claude Code plugin for hacking, development workflows, and greenfield projects
+- Target audience: developers who want expert agents, context priming, and greenfield mode
+- Stack: Shell scripts, markdown, JSON configuration

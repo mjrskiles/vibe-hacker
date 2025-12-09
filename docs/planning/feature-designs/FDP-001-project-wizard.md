@@ -1,4 +1,4 @@
-# FDP-001: Firmware Project Setup Wizard
+# FDP-001: Project Setup Wizard
 
 ## Status
 
@@ -6,11 +6,11 @@ Proposed
 
 ## Summary
 
-A project setup wizard/agent that generates opinionated firmware project scaffolding based on configurable templates. The wizard guides users through MCU selection, peripheral configuration, and project structure decisions, then generates a complete project with build system, HAL stubs, planning docs, and Claude Code integration pre-configured.
+A project setup wizard/agent that generates opinionated project scaffolding based on configurable templates. The wizard guides users through project type selection, configuration options, and structure decisions, then generates a complete project with build system, planning docs, and Claude Code integration pre-configured.
 
 ## Motivation
 
-Starting a new firmware project involves significant boilerplate:
+Starting a new project involves significant boilerplate:
 
 - Build system configuration (CMake with AVR/ARM/x86 targets)
 - Hardware abstraction layer structure
@@ -99,7 +99,7 @@ templates/
 │
 └── claude/                     # Claude Code integration
     ├── CLAUDE.md.tmpl
-    ├── firmware-hacker.json.tmpl
+    ├── vibe-hacker.json.tmpl
     ├── prime.json.tmpl
     └── settings.local.json.tmpl
 ```

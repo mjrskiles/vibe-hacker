@@ -21,23 +21,18 @@ Users must manually re-explain project structure, conventions, and current work 
 
 Implement a layered priming system:
 
-### Light Priming (SessionStart hook)
+### Full Priming (SessionStart hook)
 
-Automatically runs on session start. Outputs:
-- List of files available for priming
-- Custom instructions from prime.json
-- Prompt to use `/prime` for full context
+Automatically runs on session start and after compaction. Outputs:
+- All file contents specified in vibe-hacker.json
+- Custom instructions from config
+- Greenfield mode status
 
-### Full Priming (/prime command)
+Uses SessionStart hook with `compact` matcher to also trigger after context compaction.
 
-User-invoked command that:
-- Reads all files specified in prime.json
-- Outputs full file contents to context
-- Provides instructions for Claude to acknowledge and summarize
+### Manual Priming (/prime command)
 
-### Pre-Compaction Reminder (PreCompact hook)
-
-Warns user before compaction that they should re-prime afterward.
+User-invoked command for manual re-priming when needed. Same behavior as SessionStart.
 
 ### Fallback Chain
 
@@ -70,23 +65,16 @@ Projects configure priming via `.claude/prime.json`:
 - Full priming consumes context window
 
 **Trade-offs:**
-- Light priming on SessionStart (not full) to avoid context bloat
-- User must invoke /prime manually after compaction
+- Full priming on SessionStart consumes context but provides complete context
 - Glob support adds complexity but enables dynamic file discovery
 
 ## Alternatives Considered
 
-### Full priming on SessionStart
+### Light priming on SessionStart
 
-Automatically load all files on every session start.
+Only show file list on session start, require manual `/prime` for full context.
 
-**Rejected**: Consumes too much context window. Light priming + manual /prime is more efficient.
-
-### Hook-based full priming on compaction
-
-Automatically re-prime after compaction.
-
-**Rejected**: No post-compaction hook exists. PreCompact reminder is the best available option.
+**Rejected**: Extra friction. Full priming is more useful in practice.
 
 ### Hardcoded file list
 
@@ -96,7 +84,6 @@ Always load README.md and docs/ARCHITECTURE.md.
 
 ## Open Questions
 
-- Should there be a `/prime --light` variant for manual light priming?
 - Should priming track which files were loaded to avoid duplicates?
 
 ## References

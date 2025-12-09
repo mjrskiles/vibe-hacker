@@ -1,10 +1,10 @@
-# Firmware Hacker
+# Vibe Hacker
 
-A Claude Code plugin for firmware hacking, embedded development, and greenfield project workflows.
+A Claude Code plugin for hacking, development workflows, and greenfield projects.
 
 ## Features
 
-### Klaus - Firmware Quality Auditor
+### Klaus - Embedded Quality Auditor
 
 Klaus is a pedantic embedded systems expert who audits your code for quality issues. Invoke him after major changes or to review unfamiliar codebases.
 
@@ -73,9 +73,8 @@ Shawn's approach:
 
 Automatically prime Claude with project context on session start and after compaction.
 
-- **SessionStart hook**: Light priming shows available files and greenfield status
-- **PreCompact hook**: Reminds to re-prime after context compaction
-- **/prime command**: Full priming loads all configured files
+- **SessionStart hook**: Full priming on session start and after compaction
+- **/prime command**: Manual full priming when needed
 
 ### Greenfield Mode
 
@@ -91,9 +90,78 @@ Detected patterns:
 - Migration documentation ("the old way")
 - Unused variable renaming (`_unused` prefix)
 
+### Protected Paths
+
+Control access to files and directories with a three-tier protection system:
+
+| Tier | Behavior | Use Case |
+|------|----------|----------|
+| `readonly` | Blocks edits completely | Archived documents, historical records |
+| `guided` | Blocks with skill suggestion | Planning docs that need managed workflow |
+| `remind` | Warns but allows edit | Templates, config files |
+
+Configure protection rules in `vibe-hacker.json`:
+
+```json
+{
+  "protected_paths": {
+    "rules": [
+      {
+        "pattern": "docs/archive/**",
+        "tier": "readonly",
+        "message": "Archives are read-only."
+      },
+      {
+        "pattern": "docs/planning/**/*.md",
+        "tier": "guided",
+        "skill": "planning",
+        "message": "Use the planning skill to manage these."
+      }
+    ]
+  }
+}
+```
+
+**Pattern syntax**: Standard glob patterns (`*`, `**`, `?`, `[abc]`).
+
+### Planning Skill
+
+Manage planning documents (ADRs, FDPs, Action Plans) with proper numbering and lifecycle.
+
+**Document types**:
+
+| Type | Purpose | Example |
+|------|---------|---------|
+| ADR | Architecture Decision Record | `001-use-postgresql.md` |
+| FDP | Feature Design Proposal | `FDP-001-auth-system.md` |
+| AP | Action Plan | `AP-001-implement-login.md` |
+
+**Creating documents** (auto-numbered):
+```bash
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/new.py adr "Use PostgreSQL"
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/new.py fdp "User Authentication"
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/new.py ap "Implement login"
+```
+
+**Listing documents**:
+```bash
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/list.py              # All active
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/list.py --type adr   # Only ADRs
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/list.py --status proposed
+```
+
+**Archiving completed documents**:
+```bash
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/archive.py ADR-001
+```
+
+The planning root is configurable via `protected_paths.planning_root` (default: `docs/planning`).
+
+See [skills/planning/SKILL.md](skills/planning/SKILL.md) for full documentation.
+
 ### Configuration
 
-All plugin settings are configured via `.claude/firmware-hacker.json`:
+All plugin settings are configured via `.claude/vibe-hacker.json`:
 
 ```json
 {
@@ -102,6 +170,13 @@ All plugin settings are configured via `.claude/firmware-hacker.json`:
     "files": ["README.md", "docs/ARCHITECTURE.md"],
     "globs": ["docs/planning/action-plans/*.md"],
     "instructions": "Focus on active work in progress."
+  },
+  "protected_paths": {
+    "planning_root": "docs/planning",
+    "rules": [
+      {"pattern": "docs/planning/*/archive/**", "tier": "readonly"},
+      {"pattern": "docs/planning/**/*.md", "tier": "guided", "skill": "planning"}
+    ]
   }
 }
 ```
@@ -112,6 +187,8 @@ All plugin settings are configured via `.claude/firmware-hacker.json`:
 | `priming.files` | string[] | `[]` | Files to load during priming |
 | `priming.globs` | string[] | `[]` | Glob patterns for additional files |
 | `priming.instructions` | string | `""` | Custom instructions shown during priming |
+| `protected_paths.planning_root` | string | `"docs/planning"` | Root directory for planning documents |
+| `protected_paths.rules` | array | `[]` | Protection rules (see Protected Paths section) |
 
 ## Requirements
 
@@ -124,13 +201,13 @@ All plugin settings are configured via `.claude/firmware-hacker.json`:
 1. Create a marketplace directory with this plugin:
    ```bash
    mkdir -p my-marketplace/.claude-plugin
-   echo '{"name": "my-marketplace", "plugins": [{"name": "firmware-hacker", "source": "../firmware-hacker"}]}' > my-marketplace/.claude-plugin/marketplace.json
+   echo '{"name": "my-marketplace", "plugins": [{"name": "vibe-hacker", "source": "../vibe-hacker"}]}' > my-marketplace/.claude-plugin/marketplace.json
    ```
 
 2. In Claude Code:
    ```
    /plugin marketplace add ./my-marketplace
-   /plugin install firmware-hacker@my-marketplace
+   /plugin install vibe-hacker@my-marketplace
    ```
 
 3. Restart Claude Code
@@ -143,26 +220,26 @@ Coming soon.
 
 After installing the plugin, configure your project:
 
-1. **Create firmware-hacker.json** (copy from `templates/firmware-hacker.json.example`):
+1. **Create vibe-hacker.json** (copy from `templates/vibe-hacker.json.example`):
    ```bash
-   cp /path/to/firmware-hacker/templates/firmware-hacker.json.example .claude/firmware-hacker.json
+   cp /path/to/vibe-hacker/templates/vibe-hacker.json.example .claude/vibe-hacker.json
    # Edit to configure priming files and greenfield mode
    ```
 
 2. **Create CLAUDE.md** (optional, copy from `templates/CLAUDE.md.example`):
    ```bash
-   cp /path/to/firmware-hacker/templates/CLAUDE.md.example .claude/CLAUDE.md
+   cp /path/to/vibe-hacker/templates/CLAUDE.md.example .claude/CLAUDE.md
    # Add project-specific guidelines
    ```
 
 ## Plugin Structure
 
 ```
-firmware-hacker/
+vibe-hacker/
 ├── .claude-plugin/
 │   └── plugin.json         # Plugin manifest
 ├── agents/
-│   ├── klaus.md            # Firmware quality auditor
+│   ├── klaus.md            # Embedded quality auditor
 │   ├── librodotus.md       # Documentation quality auditor
 │   └── shawn.md            # Educational mentor
 ├── commands/
@@ -174,11 +251,24 @@ firmware-hacker/
 │   └── hooks.json          # Hook configuration
 ├── scripts/
 │   ├── check-legacy-cruft.sh       # Legacy pattern detector
+│   ├── check-protected-paths.sh    # Protected paths enforcer
 │   ├── greenfield-stop-hook.sh     # Greenfield stop hook
 │   └── prime.sh                    # Priming script
+├── skills/
+│   └── planning/
+│       ├── SKILL.md                # Planning skill documentation
+│       ├── scripts/
+│       │   ├── new.py              # Create new planning docs
+│       │   ├── archive.py          # Archive completed docs
+│       │   ├── list.py             # List planning docs
+│       │   └── config.py           # Shared configuration
+│       └── templates/
+│           ├── adr.md              # ADR template
+│           ├── fdp.md              # FDP template
+│           └── action-plan.md      # Action plan template
 ├── templates/
 │   ├── CLAUDE.md.example           # Project guidelines template
-│   └── firmware-hacker.json.example # Plugin config template
+│   └── vibe-hacker.json.example    # Plugin config template
 └── docs/
     ├── ARCHITECTURE.md
     └── planning/
@@ -191,8 +281,8 @@ firmware-hacker/
 
 | Command | Description |
 |---------|-------------|
-| `/prime` | Load full project context from firmware-hacker.json |
-| `/klaus [type]` | Firmware quality audit (memory\|timing\|safety\|style\|full) |
+| `/prime` | Load full project context from vibe-hacker.json |
+| `/klaus [type]` | Embedded quality audit (memory\|timing\|safety\|style\|full) |
 | `/librodotus [type]` | Documentation audit (readme\|code\|architecture\|freshness\|full) |
 | `/shawn [type]` | Educational review (onboarding\|concepts\|examples\|depth\|full) |
 
@@ -200,7 +290,7 @@ firmware-hacker/
 
 | Agent | Description |
 |-------|-------------|
-| `klaus` | Pedantic embedded firmware quality auditor |
+| `klaus` | Pedantic embedded quality auditor |
 | `librodotus` | Scholarly documentation quality auditor |
 | `shawn` | Warm educational mentor focused on learnability |
 
@@ -208,15 +298,16 @@ firmware-hacker/
 
 | Event | Type | Behavior |
 |-------|------|----------|
-| SessionStart | command | Light priming (file list, greenfield status) |
-| PreCompact | command | Re-prime reminder |
+| SessionStart | command | Full priming (on start and after compaction) |
+| PreToolUse (Edit\|Write) | command | Protected paths enforcement |
 | PostToolUse (Edit\|Write) | command | Legacy cruft warning (if greenfield enabled) |
 | Stop | command | Greenfield reminder (if greenfield enabled) |
 
 ## Documentation
 
 - [Architecture](docs/ARCHITECTURE.md) - Plugin design and components
-- [Planning](docs/planning/) - Decision records, feature designs, action plans
+- [Planning Skill](skills/planning/SKILL.md) - Managing planning documents
+- [Planning Documents](docs/planning/) - Decision records, feature designs, action plans
 
 ## License
 
