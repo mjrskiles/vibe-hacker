@@ -12,6 +12,7 @@
     "instructions": "Focus on active action plans and pending decisions."
   },
   "protected_paths": {
+    "planning_root": "docs/planning",
     "rules": [
       {
         "pattern": "docs/planning/*/archive/**",
@@ -20,21 +21,21 @@
       },
       {
         "pattern": "docs/planning/decision-records/[0-9][0-9][0-9]-*.md",
-        "tier": "guided",
+        "tier": "remind",
         "skill": "planning",
-        "message": "ADRs should be managed through the planning skill."
+        "message": "Consider using the planning skill scripts to update status or archive ADRs."
       },
       {
         "pattern": "docs/planning/feature-designs/FDP-*.md",
-        "tier": "guided",
+        "tier": "remind",
         "skill": "planning",
-        "message": "FDPs should be managed through the planning skill."
+        "message": "Consider using the planning skill scripts to update status or archive FDPs."
       },
       {
         "pattern": "docs/planning/action-plans/AP-*.md",
-        "tier": "guided",
+        "tier": "remind",
         "skill": "planning",
-        "message": "Action plans should be managed through the planning skill."
+        "message": "Consider using the planning skill scripts to update status or archive action plans."
       },
       {
         "pattern": "templates/**",

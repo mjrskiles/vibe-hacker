@@ -65,9 +65,10 @@ Default locations (relative to planning_root):
 
 Use the planning scripts when:
 - Creating a new planning document (ensures proper numbering)
+- Updating a document's status (e.g., Proposed → Accepted)
+- Editing a document (validates status allows editing)
 - Archiving a completed or superseded document
 - Listing active planning documents
-- Checking document status
 
 **Do NOT manually create or renumber planning documents.** Always use the scripts.
 
@@ -107,6 +108,55 @@ python3 scripts/archive.py ADR-001
 python3 scripts/archive.py FDP-002
 # Moves to archive/, updates status to "Archived"
 ```
+
+### Update Status
+
+```bash
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/update-status.py <doc-id> <new-status>
+```
+
+Examples:
+```bash
+python3 scripts/update-status.py ADR-001 accepted
+# Updates ADR-001 status from Proposed to Accepted
+
+python3 scripts/update-status.py FDP-002 "in progress"
+# Updates FDP-002 status to In Progress
+
+python3 scripts/update-status.py AP-001 completed
+# Updates AP-001 status to Completed (suggests archiving)
+```
+
+Valid statuses by type:
+- **ADR**: proposed, accepted, deprecated, superseded
+- **FDP**: proposed, in progress, implemented, abandoned
+- **AP**: active, completed, abandoned
+
+### Check Edit Permission
+
+```bash
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/edit.py <doc-id>
+```
+
+Checks if a document can be edited based on its status. Outputs the file path if editable.
+
+Examples:
+```bash
+python3 scripts/edit.py ADR-001
+# If Proposed: outputs path, exit 0
+# If Accepted: outputs error, exit 1
+
+python3 scripts/edit.py FDP-002 --force
+# Force edit even if locked (outputs warning)
+
+python3 scripts/edit.py AP-001 --quiet
+# Only output path, no messages
+```
+
+**Locked statuses** (require `--force` to edit):
+- **ADR**: accepted, deprecated, superseded
+- **FDP**: implemented, abandoned
+- **AP**: completed, abandoned
 
 ### List Documents
 
@@ -159,12 +209,12 @@ Active → [Completed | Abandoned]
 
 ## Protected Paths
 
-Planning documents may be protected by the PreToolUse hook:
-- **Archived documents**: Read-only, cannot be edited
-- **Accepted ADRs**: Read-only, create new ADR to supersede
-- **Active documents**: May require using this skill to edit
+Planning documents are configured with protection rules in `vibe-hacker.json`:
 
-If an edit is blocked, use the appropriate script to make changes.
+- **Archived documents** (`readonly` tier): Cannot be edited
+- **Active planning documents** (`remind` tier): Editable with a warning suggesting skill scripts
+
+The `edit.py` script provides additional validation based on document status (e.g., accepted ADRs are locked).
 
 ## Templates
 

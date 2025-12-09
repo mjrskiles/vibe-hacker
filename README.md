@@ -149,6 +149,18 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/new.py ap "Implement login
 python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/init-roadmap.py
 ```
 
+**Updating status**:
+```bash
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/update-status.py ADR-001 accepted
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/update-status.py FDP-001 "in progress"
+```
+
+**Checking edit permission**:
+```bash
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/edit.py ADR-001      # Check if editable
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/edit.py ADR-001 -f   # Force edit
+```
+
 **Listing documents**:
 ```bash
 python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/list.py              # All active
