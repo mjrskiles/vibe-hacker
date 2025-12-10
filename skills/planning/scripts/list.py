@@ -26,19 +26,19 @@ def get_doc_types() -> dict:
     return {
         'adr': {
             'dir': get_doc_dir('adr'),
-            'pattern': r'^(\d{3})-(.*)\.md$',
+            'pattern': r'^(\d+)-(.*)\.md$',
             'id_format': 'ADR-{:03d}',
             'label': 'ADR',
         },
         'fdp': {
             'dir': get_doc_dir('fdp'),
-            'pattern': r'^FDP-(\d{3})-(.*)\.md$',
+            'pattern': r'^FDP-(\d+)-(.*)\.md$',
             'id_format': 'FDP-{:03d}',
             'label': 'FDP',
         },
         'ap': {
             'dir': get_doc_dir('ap'),
-            'pattern': r'^AP-(\d{3})-(.*)\.md$',
+            'pattern': r'^AP-(\d+)-(.*)\.md$',
             'id_format': 'AP-{:03d}',
             'label': 'Action Plan',
         },

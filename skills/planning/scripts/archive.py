@@ -32,18 +32,18 @@ def get_doc_types() -> dict:
     return {
         'adr': {
             'dir': get_doc_dir('adr'),
-            'pattern': r'^(\d{3})-.*\.md$',
-            'id_pattern': r'^ADR-(\d{3})$',
+            'pattern': r'^(\d+)-.*\.md$',
+            'id_pattern': r'^ADR-(\d+)$',
         },
         'fdp': {
             'dir': get_doc_dir('fdp'),
-            'pattern': r'^FDP-(\d{3})-.*\.md$',
-            'id_pattern': r'^FDP-(\d{3})$',
+            'pattern': r'^FDP-(\d+)-.*\.md$',
+            'id_pattern': r'^FDP-(\d+)$',
         },
         'ap': {
             'dir': get_doc_dir('ap'),
-            'pattern': r'^AP-(\d{3})-.*\.md$',
-            'id_pattern': r'^AP-(\d{3})$',
+            'pattern': r'^AP-(\d+)-.*\.md$',
+            'id_pattern': r'^AP-(\d+)$',
         },
     }
 
