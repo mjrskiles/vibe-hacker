@@ -1,0 +1,11 @@
+{
+  "greenfield_mode": true,
+  "greenfield_strict": false,
+  "greenfield_patterns": [
+    "// deprecated",
+    "// legacy",
+    "@deprecated",
+    "# deprecated",
+    "// TODO: remove"
+  ]
+}

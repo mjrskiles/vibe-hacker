@@ -1,17 +1,22 @@
 {
-  "name": "mjrskiles-plugins",
-  "description": "Claude Code plugins by Michael Skiles",
-  "owner": {
-    "name": "Michael Skiles",
-    "email": "mike@mskiles.com",
-    "url": "https://github.com/mjrskiles"
-  },
-  "repository": "https://github.com/mjrskiles/vibe-hacker",
+  "name": "vibe-hacker",
+  "description": "Plugins for hacking, development workflows, and greenfield projects",
   "plugins": [
     {
-      "name": "vibe-hacker",
-      "source": "./",
-      "description": "Claude Code plugin for vibe hacking and greenfield workflows"
+      "name": "greenfield-mode",
+      "source": "../plugins/greenfield-mode"
+    },
+    {
+      "name": "primer",
+      "source": "../plugins/primer"
+    },
+    {
+      "name": "planning",
+      "source": "../plugins/planning"
+    },
+    {
+      "name": "expert-agents",
+      "source": "../plugins/expert-agents"
     }
   ]
 }

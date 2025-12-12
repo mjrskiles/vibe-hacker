@@ -1,0 +1,16 @@
+{
+  "name": "primer",
+  "version": "0.1.0",
+  "description": "Context priming - load project files on session start",
+  "author": {
+    "name": "Michael Skiles",
+    "email": "mike@mskiles.com"
+  },
+  "repository": "https://github.com/mjrskiles/vibe-hacker",
+  "license": "MIT",
+  "keywords": [
+    "priming",
+    "context",
+    "session"
+  ]
+}

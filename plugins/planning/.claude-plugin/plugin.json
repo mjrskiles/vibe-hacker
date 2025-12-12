@@ -1,0 +1,17 @@
+{
+  "name": "planning",
+  "version": "0.1.0",
+  "description": "Structured planning documents (ADRs, FDPs, Action Plans) with protected paths",
+  "author": {
+    "name": "Michael Skiles",
+    "email": "mike@mskiles.com"
+  },
+  "repository": "https://github.com/mjrskiles/vibe-hacker",
+  "license": "MIT",
+  "keywords": [
+    "planning",
+    "adr",
+    "documentation",
+    "workflow"
+  ]
+}

@@ -1,337 +1,139 @@
 # Vibe Hacker
 
-A Claude Code plugin for hacking, development workflows, and greenfield projects.
+A collection of Claude Code plugins for hacking, development workflows, and greenfield projects.
 
-## Features
+## Plugins
 
-### Klaus - Embedded Quality Auditor
+| Plugin | Description | Use Case |
+|--------|-------------|----------|
+| [greenfield-mode](plugins/greenfield-mode/) | Prevent backwards-compatibility cruft | Prototype projects |
+| [primer](plugins/primer/) | Context priming on session start | Any project |
+| [planning](plugins/planning/) | ADRs, FDPs, Action Plans, Roadmap | Structured planning |
+| [expert-agents](plugins/expert-agents/) | Klaus, Librodotus, Shawn | Code audits |
 
-Klaus is a pedantic embedded systems expert who audits your code for quality issues. Invoke him after major changes or to review unfamiliar codebases.
-
-**Audit types:**
-- `memory` - RAM, stack, globals, allocation patterns
-- `timing` - ISRs, blocking calls, timeouts, real-time concerns
-- `safety` - Error handling, defensive coding, robustness
-- `style` - Code organization, naming, documentation
-- `full` - Comprehensive audit (all of the above)
+## Quick Start
 
 ```bash
-/klaus memory    # Check for memory issues
-/klaus full      # Full codebase audit
+# Add the vibe-hacker directory as a marketplace
+/plugin marketplace add /path/to/vibe-hacker
+
+# Install individual plugins
+/plugin install greenfield-mode@vibe-hacker
+/plugin install primer@vibe-hacker
+/plugin install planning@vibe-hacker
+/plugin install expert-agents@vibe-hacker
 ```
 
-Klaus checks for common embedded anti-patterns:
-- Dynamic allocation (`malloc` on embedded)
-- Floating point on 8-bit MCUs
-- Fat ISRs (should set flag and exit)
-- Unbounded busy-waits
-- Missing timeouts on blocking calls
+## Plugin Overview
 
-### Librodotus - Documentation Quality Auditor
+### greenfield-mode
 
-Librodotus is a scholarly documentation purist who ensures your docs are useful, scannable, and accurate. Named after Herodotus—but unlike his namesake, he never embellishes.
+Prevents backwards-compatibility cruft in prototype projects.
 
-**Audit types:**
-- `readme` - README scannability, 30-second test
-- `code` - Source code comments, API documentation
-- `architecture` - System docs, decision records
-- `freshness` - Staleness check, outdated references
-- `full` - Comprehensive audit (all of the above)
+**Hooks:**
+- PostToolUse: Detect legacy patterns in edited files
+- Stop: Greenfield reminder
 
-```bash
-/librodotus readme    # Audit README quality
-/librodotus full      # Full documentation audit
-```
+**Config:** `greenfield_mode`, `greenfield_strict`, `greenfield_patterns`
 
-Librodotus philosophy:
-- "A README should answer 'what is this?' in 10 seconds."
-- "The best comment explains *why*, not *what*."
-- "Tables are your friend. Walls of text are your enemy."
+[Full documentation](plugins/greenfield-mode/README.md)
 
-### Shawn - Educational Mentor
+### primer
 
-Shawn is a warm mentor who views projects through an educator's lens. He asks: "What makes this teachable? How can we spark curiosity while building competence?"
+Context priming - automatically load project files on session start.
 
-**Review types:**
-- `onboarding` - First five minutes, setup friction, initial success
-- `concepts` - Clarity, progression, mental models
-- `examples` - Quality, runnability, scaffolding
-- `depth` - Challenge gradient, growth pathways
-- `full` - Comprehensive educational review
+**Hooks:**
+- SessionStart: Load configured files
+- After Compact: Reload files
 
-```bash
-/shawn onboarding   # How's the first experience?
-/shawn full         # Full educational review
-```
+**Config:** `priming.files`, `priming.globs`, `priming.instructions`
 
-Shawn's approach:
-- "Can someone see themselves succeeding here?"
-- "What's the first 'aha!' moment, and how quickly can we get there?"
-- "Is the complexity essential, or accidental?"
+[Full documentation](plugins/primer/README.md)
 
-### Context Priming
+### planning
 
-Automatically prime Claude with project context on session start and after compaction.
+Structured planning documents with protected paths.
 
-- **SessionStart hook**: Full priming on session start and after compaction
-- **/prime command**: Manual full priming when needed
+**Features:**
+- ADRs, FDPs, Action Plans, Roadmap
+- Protected path enforcement (readonly/guided/remind tiers)
 
-### Greenfield Mode
+**Hooks:**
+- PreCompact: Roadmap update reminder
+- PreToolUse: Protected paths check
 
-Optional mode that prevents backwards-compatibility cruft in prototype/unreleased projects. Enable per-project via config.
+**Config:** `planning`, `protected_paths`
 
-When enabled:
-- **PostToolUse hook**: Warns when edited files contain legacy patterns
-- **Stop hook**: Reminds about greenfield rules at session end
+[Full documentation](plugins/planning/README.md)
 
-Detected patterns:
-- Deprecation comments (`// deprecated`, `@deprecated`, `# legacy`)
-- Backwards-compatibility shims and re-exports
-- Migration documentation ("the old way")
-- Unused variable renaming (`_unused` prefix)
+### expert-agents
 
-### Protected Paths
+Domain-specific code auditors with unique personalities.
 
-Control access to files and directories with a three-tier protection system:
+**Commands:**
+- `/klaus` - Embedded systems auditor
+- `/librodotus` - Documentation quality auditor
+- `/shawn` - Educational mentor
 
-| Tier | Behavior | Use Case |
-|------|----------|----------|
-| `readonly` | Blocks edits completely | Archived documents, historical records |
-| `guided` | Blocks with skill suggestion | Planning docs that need managed workflow |
-| `remind` | Warns but allows edit | Templates, config files |
+**Config:** None (stateless)
 
-Configure protection rules in `vibe-hacker.json`:
+[Full documentation](plugins/expert-agents/README.md)
 
-```json
-{
-  "protected_paths": {
-    "rules": [
-      {
-        "pattern": "docs/archive/**",
-        "tier": "readonly",
-        "message": "Archives are read-only."
-      },
-      {
-        "pattern": "docs/planning/**/*.md",
-        "tier": "guided",
-        "skill": "planning",
-        "message": "Use the planning skill to manage these."
-      }
-    ]
-  }
-}
-```
+## Shared Configuration
 
-**Pattern syntax**: Standard glob patterns (`*`, `**`, `?`, `[abc]`).
-
-### Planning Skill
-
-Manage planning documents (ADRs, FDPs, Action Plans, Roadmap) with proper numbering and lifecycle.
-
-**Document types**:
-
-| Type | Purpose | Example |
-|------|---------|---------|
-| ADR | Architecture Decision Record | `001-use-postgresql.md` |
-| FDP | Feature Design Proposal | `FDP-001-auth-system.md` |
-| AP | Action Plan | `AP-001-implement-login.md` |
-| Roadmap | Project goals (immediate/medium/long term) | `roadmap.md` |
-
-**Creating documents** (auto-numbered):
-```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/new.py adr "Use PostgreSQL"
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/new.py fdp "User Authentication"
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/new.py ap "Implement login"
-```
-
-**Initialize roadmap**:
-```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/init-roadmap.py
-```
-
-**Updating status**:
-```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/update-status.py ADR-001 accepted
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/update-status.py FDP-001 "in progress"
-```
-
-**Checking edit permission**:
-```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/edit.py ADR-001      # Check if editable
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/edit.py ADR-001 -f   # Force edit
-```
-
-**Listing documents**:
-```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/list.py              # All active
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/list.py --type adr   # Only ADRs
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/list.py --status proposed
-```
-
-**Archiving completed documents**:
-```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/archive.py ADR-001
-```
-
-The planning root is configurable via `protected_paths.planning_root` (default: `docs/planning`).
-
-A **PreCompact hook** reminds you to update the roadmap before context compaction.
-
-See [skills/planning/SKILL.md](skills/planning/SKILL.md) for full documentation.
-
-### Configuration
-
-All plugin settings are configured via `.claude/vibe-hacker.json`:
+All plugins read from `.claude/vibe-hacker.json`:
 
 ```json
 {
   "greenfield_mode": true,
+  "greenfield_strict": false,
+  "greenfield_patterns": ["// deprecated", "@deprecated"],
   "priming": {
-    "files": ["README.md", "docs/ARCHITECTURE.md"],
+    "files": ["README.md"],
     "globs": ["docs/planning/action-plans/*.md"],
-    "instructions": "Focus on active work in progress."
+    "instructions": "Focus on active work."
+  },
+  "planning": {
+    "subdirs": {
+      "adr": "decision-records",
+      "fdp": "feature-designs",
+      "ap": "action-plans"
+    }
   },
   "protected_paths": {
     "planning_root": "docs/planning",
     "rules": [
-      {"pattern": "docs/planning/*/archive/**", "tier": "readonly"},
-      {"pattern": "docs/planning/**/*.md", "tier": "guided", "skill": "planning"}
+      {"pattern": "docs/archive/**", "tier": "readonly"}
     ]
   }
 }
 ```
 
-| Setting | Type | Default | Description |
-|---------|------|---------|-------------|
-| `greenfield_mode` | boolean | `false` | Enable greenfield mode checks |
-| `priming.files` | string[] | `[]` | Files to load during priming |
-| `priming.globs` | string[] | `[]` | Glob patterns for additional files |
-| `priming.instructions` | string | `""` | Custom instructions shown during priming |
-| `protected_paths.planning_root` | string | `"docs/planning"` | Root directory for planning documents |
-| `protected_paths.rules` | array | `[]` | Protection rules (see Protected Paths section) |
+Each plugin reads only its relevant keys:
+- `greenfield-mode` reads: `greenfield_mode`, `greenfield_strict`, `greenfield_patterns`
+- `primer` reads: `priming`, `greenfield_mode` (for display)
+- `planning` reads: `planning`, `protected_paths`
+- `expert-agents` reads: nothing (stateless)
 
-## Requirements
-
-- [jq](https://jqlang.github.io/jq/) - JSON processor (used by priming and greenfield scripts)
-
-## Installation
-
-### Via Local Marketplace (Development)
-
-1. Create a marketplace directory with this plugin:
-   ```bash
-   mkdir -p my-marketplace/.claude-plugin
-   echo '{"name": "my-marketplace", "plugins": [{"name": "vibe-hacker", "source": "../vibe-hacker"}]}' > my-marketplace/.claude-plugin/marketplace.json
-   ```
-
-2. In Claude Code:
-   ```
-   /plugin marketplace add ./my-marketplace
-   /plugin install vibe-hacker@my-marketplace
-   ```
-
-3. Restart Claude Code
-
-### Via GitHub Marketplace
-
-Coming soon.
-
-## Project Setup
-
-After installing the plugin, configure your project:
-
-1. **Create vibe-hacker.json** (copy from `templates/vibe-hacker.json.example`):
-   ```bash
-   cp /path/to/vibe-hacker/templates/vibe-hacker.json.example .claude/vibe-hacker.json
-   # Edit to configure priming files and greenfield mode
-   ```
-
-2. **Create CLAUDE.md** (optional, copy from `templates/CLAUDE.md.example`):
-   ```bash
-   cp /path/to/vibe-hacker/templates/CLAUDE.md.example .claude/CLAUDE.md
-   # Add project-specific guidelines
-   ```
-
-## Plugin Structure
+## Repository Structure
 
 ```
 vibe-hacker/
-├── .claude-plugin/
-│   └── plugin.json         # Plugin manifest
-├── agents/
-│   ├── klaus.md            # Embedded quality auditor
-│   ├── librodotus.md       # Documentation quality auditor
-│   └── shawn.md            # Educational mentor
-├── commands/
-│   ├── klaus.md            # /klaus command
-│   ├── librodotus.md       # /librodotus command
-│   ├── prime.md            # /prime command
-│   └── shawn.md            # /shawn command
-├── hooks/
-│   └── hooks.json          # Hook configuration
-├── scripts/
-│   ├── check-legacy-cruft.sh       # Legacy pattern detector
-│   ├── check-protected-paths.sh    # Protected paths enforcer
-│   ├── greenfield-stop-hook.sh     # Greenfield stop hook
-│   ├── precompact-roadmap.sh       # Roadmap update reminder
-│   └── prime.sh                    # Priming script
-├── skills/
-│   └── planning/
-│       ├── SKILL.md                # Planning skill documentation
-│       ├── scripts/
-│       │   ├── new.py              # Create new planning docs
-│       │   ├── archive.py          # Archive completed docs
-│       │   ├── list.py             # List planning docs
-│       │   ├── init-roadmap.py     # Initialize project roadmap
-│       │   └── config.py           # Shared configuration
-│       └── templates/
-│           ├── adr.md              # ADR template
-│           ├── fdp.md              # FDP template
-│           ├── action-plan.md      # Action plan template
-│           └── roadmap.md          # Roadmap template
+├── plugins/
+│   ├── greenfield-mode/      # Cruft prevention
+│   ├── primer/               # Context priming
+│   ├── planning/             # Planning documents
+│   └── expert-agents/        # Code auditors
+├── docs/
+│   └── planning/             # This project's planning docs
 ├── templates/
-│   ├── CLAUDE.md.example           # Project guidelines template
-│   └── vibe-hacker.json.example    # Plugin config template
-└── docs/
-    ├── ARCHITECTURE.md
-    └── planning/
-        ├── action-plans/
-        ├── decision-records/
-        └── feature-designs/
+└── README.md
 ```
 
-## Commands
+## Requirements
 
-| Command | Description |
-|---------|-------------|
-| `/prime` | Load full project context from vibe-hacker.json |
-| `/klaus [type]` | Embedded quality audit (memory\|timing\|safety\|style\|full) |
-| `/librodotus [type]` | Documentation audit (readme\|code\|architecture\|freshness\|full) |
-| `/shawn [type]` | Educational review (onboarding\|concepts\|examples\|depth\|full) |
-
-## Agents
-
-| Agent | Description |
-|-------|-------------|
-| `klaus` | Pedantic embedded quality auditor |
-| `librodotus` | Scholarly documentation quality auditor |
-| `shawn` | Warm educational mentor focused on learnability |
-
-## Hooks
-
-| Event | Type | Behavior |
-|-------|------|----------|
-| SessionStart | command | Full priming (on start and after compaction) |
-| PreCompact | command | Roadmap update reminder |
-| PreToolUse (Edit\|Write) | command | Protected paths enforcement |
-| PostToolUse (Edit\|Write) | command | Legacy cruft warning (if greenfield enabled) |
-| Stop | command | Greenfield reminder (if greenfield enabled) |
-
-## Documentation
-
-- [Architecture](docs/ARCHITECTURE.md) - Plugin design and components
-- [Planning Skill](skills/planning/SKILL.md) - Managing planning documents
-- [Planning Documents](docs/planning/) - Decision records, feature designs, action plans
+- [jq](https://jqlang.github.io/jq/) - JSON processor (greenfield-mode, primer, planning)
+- Python 3.x - Planning scripts (planning only)
 
 ## License
 

@@ -1,5 +1,13 @@
 {
   "greenfield_mode": false,
+  "debug_mode": false,
+  "greenfield_patterns": [
+    "// deprecated",
+    "// legacy",
+    "@deprecated",
+    "# deprecated",
+    "// TODO: remove"
+  ],
   "priming": {
     "files": [
       "README.md",
@@ -10,6 +18,13 @@
       "docs/planning/action-plans/AP-*-*.md"
     ],
     "instructions": "Focus on active action plans and pending decisions."
+  },
+  "planning": {
+    "subdirs": {
+      "adr": "decision-records",
+      "fdp": "feature-designs",
+      "ap": "action-plans"
+    }
   },
   "protected_paths": {
     "planning_root": "docs/planning",

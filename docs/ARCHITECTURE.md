@@ -68,6 +68,7 @@ Configures hooks:
 | PreCompact | (all) | command | `precompact-roadmap.sh` (roadmap reminder) |
 | PreToolUse | Edit\|Write | command | `check-protected-paths.sh` |
 | PostToolUse | Edit\|Write | command | `check-legacy-cruft.sh --warn-only` |
+| PostToolUse | (all) | command | `log-tool-result.sh` (debug mode) |
 | Stop | (all) | prompt | Haiku greenfield review |
 
 ### Priming System
@@ -109,11 +110,19 @@ docs/                     →  Scan for markdown files
 
 **Purpose**: Detect backwards-compatibility patterns that shouldn't exist in greenfield projects.
 
-**Detected Patterns**:
+**Default Patterns** (used when `greenfield_patterns` not configured):
 - `// deprecated`, `# deprecated`, `@deprecated`
 - `// legacy`, `// old:`, `// old way`
 - `// TODO: remove after migration`
 - `// backwards compat`, `// for compatibility`
+
+**Custom Patterns** (in `vibe-hacker.json`):
+```json
+{
+  "greenfield_patterns": ["// deprecated", "// wip", "FIXME: compat"]
+}
+```
+When configured, custom patterns fully replace the defaults.
 
 **Modes**:
 - Default: Exit 2 (block) on detection
@@ -196,6 +205,28 @@ Roadmap: Living document (updated before compaction)
 {
   "decision": "approve",
   "reason": "WARNING - GREENFIELD VIOLATION: [issue]"
+}
+```
+
+### Debug Mode
+
+**Script**: `scripts/log-tool-result.sh`
+
+**Purpose**: Log tool failures for debugging when `debug_mode` is enabled.
+
+**Behavior**:
+- Runs on all PostToolUse events
+- Checks `tool_response.success` field
+- Logs failures to `.claude/temp/tool-failures.log`
+- Always exits 0 (never blocks)
+
+**Priming Integration**:
+When debug mode is enabled, `prime.sh` outputs instructions for agents to write bug reports to `.claude/temp/bug-report-<description>.md`.
+
+**Configuration**:
+```json
+{
+  "debug_mode": true
 }
 ```
 

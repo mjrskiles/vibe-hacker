@@ -1,0 +1,25 @@
+{
+  "planning": {
+    "subdirs": {
+      "adr": "decision-records",
+      "fdp": "feature-designs",
+      "ap": "action-plans"
+    }
+  },
+  "protected_paths": {
+    "planning_root": "docs/planning",
+    "rules": [
+      {
+        "pattern": "docs/planning/*/archive/**",
+        "tier": "readonly",
+        "message": "Archives are read-only."
+      },
+      {
+        "pattern": "docs/planning/**/*.md",
+        "tier": "guided",
+        "skill": "planning",
+        "message": "Use the planning skill to manage these documents."
+      }
+    ]
+  }
+}

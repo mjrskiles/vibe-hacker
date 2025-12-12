@@ -1,0 +1,16 @@
+{
+  "name": "greenfield-mode",
+  "version": "0.1.0",
+  "description": "Prevent backwards-compatibility cruft in prototype projects",
+  "author": {
+    "name": "Michael Skiles",
+    "email": "mike@mskiles.com"
+  },
+  "repository": "https://github.com/mjrskiles/vibe-hacker",
+  "license": "MIT",
+  "keywords": [
+    "greenfield",
+    "prototype",
+    "cruft-detection"
+  ]
+}

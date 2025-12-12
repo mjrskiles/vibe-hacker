@@ -46,20 +46,34 @@ The roadmap is human-editable and should be updated regularly to reflect project
 
 ## Configuration
 
-The planning root directory is configurable in `vibe-hacker.json`:
+Configure planning directories in `vibe-hacker.json`:
 
 ```json
 {
+  "planning": {
+    "subdirs": {
+      "adr": "decision-records",
+      "fdp": "feature-designs",
+      "ap": "action-plans"
+    }
+  },
   "protected_paths": {
     "planning_root": "docs/planning"
   }
 }
 ```
 
-Default locations (relative to planning_root):
-- ADRs: `decision-records/`
-- FDPs: `feature-designs/`
-- Action Plans: `action-plans/`
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `protected_paths.planning_root` | `docs/planning` | Root directory for all planning docs |
+| `planning.subdirs.adr` | `decision-records` | Subdirectory for ADRs |
+| `planning.subdirs.fdp` | `feature-designs` | Subdirectory for FDPs |
+| `planning.subdirs.ap` | `action-plans` | Subdirectory for Action Plans |
+
+With the defaults above, documents are created at:
+- ADRs: `docs/planning/decision-records/NNN-slug.md`
+- FDPs: `docs/planning/feature-designs/FDP-NNN-slug.md`
+- Action Plans: `docs/planning/action-plans/AP-NNN-slug.md`
 
 ## When to Use This Skill
 
