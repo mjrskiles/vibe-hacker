@@ -2,11 +2,10 @@
   "greenfield_mode": false,
   "debug_mode": false,
   "greenfield_patterns": [
-    "// deprecated",
-    "// legacy",
+    "[Dd]eprecated",
+    "[Ll]egacy",
     "@deprecated",
-    "# deprecated",
-    "// TODO: remove"
+    "TODO"
   ],
   "priming": {
     "files": [
