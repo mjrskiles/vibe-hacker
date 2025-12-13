@@ -8,7 +8,7 @@ A collection of Claude Code plugins for hacking, development workflows, and gree
 |--------|-------------|----------|
 | [greenfield-mode](plugins/greenfield-mode/) | Prevent backwards-compatibility cruft | Prototype projects |
 | [primer](plugins/primer/) | Context priming on session start | Any project |
-| [planning](plugins/planning/) | ADRs, FDPs, Action Plans, Roadmap | Structured planning |
+| [planning](plugins/planning/) | ADRs, FDPs, Action Plans, Reports, Roadmap | Structured planning |
 | [expert-agents](plugins/expert-agents/) | Klaus, Librodotus, Shawn | Code audits |
 
 ## Quick Start
@@ -55,7 +55,10 @@ Context priming - automatically load project files on session start.
 Structured planning documents with protected paths.
 
 **Features:**
-- ADRs, FDPs, Action Plans, Roadmap
+- ADRs, FDPs, Action Plans, Reports, Roadmap
+- YAML frontmatter for structured metadata
+- Append-only addenda for locked documents
+- Document relationships (supersedes, related)
 - Protected path enforcement (readonly/guided/remind tiers)
 
 **Hooks:**
@@ -87,23 +90,25 @@ All plugins read from `.claude/vibe-hacker.json`:
 {
   "greenfield_mode": true,
   "greenfield_strict": false,
-  "greenfield_patterns": ["// deprecated", "@deprecated"],
+  "greenfield_patterns": ["deprecated", "legacy", "@deprecated"],
   "priming": {
     "files": ["README.md"],
     "globs": ["docs/planning/action-plans/*.md"],
     "instructions": "Focus on active work."
   },
   "planning": {
+    "version": "0.2.0",
     "subdirs": {
-      "adr": "decision-records",
-      "fdp": "feature-designs",
-      "ap": "action-plans"
+      "adr": "decisions",
+      "fdp": "designs",
+      "ap": "action-plans",
+      "report": "reports"
     }
   },
   "protected_paths": {
     "planning_root": "docs/planning",
     "rules": [
-      {"pattern": "docs/archive/**", "tier": "readonly"}
+      {"pattern": "docs/planning/*/archive/**", "tier": "readonly"}
     ]
   }
 }

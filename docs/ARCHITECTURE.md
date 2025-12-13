@@ -111,15 +111,18 @@ docs/                     →  Scan for markdown files
 **Purpose**: Detect backwards-compatibility patterns that shouldn't exist in greenfield projects.
 
 **Default Patterns** (used when `greenfield_patterns` not configured):
-- `// deprecated`, `# deprecated`, `@deprecated`
-- `// legacy`, `// old:`, `// old way`
-- `// TODO: remove after migration`
-- `// backwards compat`, `// for compatibility`
+- `deprecated`, `@deprecated`
+- `legacy`, `obsolete`
+- `backwards.compat`, `backward.compat`
+- `for.compatibility`, `compat.shim`
+- `TODO.*remove`, `TODO.*migrate`
+
+Note: Patterns are case-insensitive (uses `grep -i`).
 
 **Custom Patterns** (in `vibe-hacker.json`):
 ```json
 {
-  "greenfield_patterns": ["// deprecated", "// wip", "FIXME: compat"]
+  "greenfield_patterns": ["deprecated", "legacy", "FIXME: compat"]
 }
 ```
 When configured, custom patterns fully replace the defaults.
@@ -169,22 +172,30 @@ When configured, custom patterns fully replace the defaults.
 
 **Location**: `skills/planning/`
 
-**Purpose**: Manage planning documents (ADRs, FDPs, Action Plans, Roadmap) with proper numbering and lifecycle.
+**Purpose**: Manage planning documents (ADRs, FDPs, Action Plans, Reports, Roadmap) with proper numbering and lifecycle.
 
 **Components**:
 - `SKILL.md` - Skill documentation (auto-invoked when guided tier suggests it)
 - `scripts/new.py` - Create new documents with auto-numbering
 - `scripts/archive.py` - Move completed documents to archive
 - `scripts/list.py` - List active documents with status
+- `scripts/update-status.py` - Update document status
+- `scripts/append.py` - Add addenda to locked documents
+- `scripts/supersede.py` - Create document that supersedes another
+- `scripts/relate.py` - Link related documents
+- `scripts/edit.py` - Check edit permission by status
+- `scripts/vibe-doc.py` - Migration tool (status, upgrade, changelog)
 - `scripts/init-roadmap.py` - Initialize project roadmap from template
 - `scripts/config.py` - Shared configuration utilities
-- `templates/` - Document templates (ADR, FDP, AP, Roadmap)
+- `scripts/frontmatter.py` - YAML frontmatter parsing/rendering
+- `templates/` - Document templates (ADR, FDP, AP, Report, Roadmap)
 
 **Document Lifecycle**:
 ```
 ADR:     Proposed → Accepted → [Superseded | Deprecated]
 FDP:     Proposed → In Progress → [Implemented | Abandoned]
 AP:      Active → [Completed | Abandoned]
+Report:  Draft → Published → [Superseded | Obsoleted]
 Roadmap: Living document (updated before compaction)
 ```
 

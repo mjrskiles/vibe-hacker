@@ -75,7 +75,7 @@ This plugin is part of the [vibe-hacker](https://github.com/mjrskiles/vibe-hacke
 
 - **greenfield-mode** - Cruft prevention for prototypes
 - **primer** (this plugin) - Context priming
-- **planning** - ADRs, FDPs, Action Plans, Roadmap
+- **planning** - ADRs, FDPs, Action Plans, Reports, Roadmap
 - **expert-agents** - Klaus, Librodotus, Shawn
 
 ## License

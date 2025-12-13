@@ -1,3 +1,15 @@
+---
+type: ap
+id: AP-${NUMBER}
+status: active
+created: ${DATE}
+modified: ${DATE}
+supersedes: null
+superseded_by: null
+obsoleted_by: null
+related: []
+---
+
 # AP-${NUMBER}: ${TITLE}
 
 ## Status
@@ -33,3 +45,7 @@ How do we know when this is done?
 ## References
 
 - Related FDPs, ADRs, or issues
+
+---
+
+## Addenda

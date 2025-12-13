@@ -1,3 +1,15 @@
+---
+type: fdp
+id: FDP-001
+status: proposed
+created: 2025-12-13
+modified: 2025-12-13
+supersedes: null
+superseded_by: null
+obsoleted_by: null
+related: []
+---
+
 # FDP-001: Project Setup Wizard
 
 ## Status
@@ -296,3 +308,7 @@ Just use Claude to write files from scratch each time.
 - [ ] Add component templates (FSM, debounce, neopixel)
 - [ ] Integration test: generate and build ATtiny project
 - [ ] Documentation: Update README with wizard usage
+
+---
+
+## Addenda

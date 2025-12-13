@@ -1,3 +1,15 @@
+---
+type: adr
+id: ADR-001
+status: accepted
+created: 2024-12-08
+modified: '2025-12-13'
+supersedes: null
+superseded_by: null
+obsoleted_by: null
+related: []
+---
+
 # ADR-001: Greenfield Mode for Prototype Projects
 
 ## Status
@@ -77,3 +89,10 @@ Use only pattern matching without LLM review.
 ## References
 
 - [Claude Code Hooks Guide](https://docs.anthropic.com/claude-code/hooks)
+
+---
+
+## Addenda
+### 2025-12-13: v0.2.0 Migration Test
+
+This addendum was added to test the append functionality on locked documents.

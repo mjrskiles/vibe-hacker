@@ -48,5 +48,14 @@
         "message": "This is a planning template. Ensure placeholders like ${NUMBER}, ${TITLE}, ${DATE} are preserved."
       }
     ]
+  },
+  "planning": {
+    "version": "0.2.0",
+    "subdirs": {
+      "adr": "decision-records",
+      "fdp": "feature-designs",
+      "ap": "action-plans",
+      "report": "reports"
+    }
   }
 }

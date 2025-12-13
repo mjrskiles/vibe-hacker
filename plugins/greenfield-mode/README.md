@@ -15,8 +15,9 @@ This cruft creates confusion in greenfield projects where there is no "old way."
 
 ## What It Does
 
-1. **Cruft Detection** (PostToolUse): Warns/blocks when edited files contain legacy patterns
-2. **Session Reminder** (Stop): Reminds about greenfield rules at session end
+1. **Status Display** (SessionStart): Shows greenfield mode status when session starts
+2. **Cruft Detection** (PostToolUse): Warns/blocks when edited files contain legacy patterns
+3. **Session Reminder** (Stop): Reminds about greenfield rules at session end
 
 ## Installation
 
@@ -62,9 +63,9 @@ Override the default cruft patterns:
 {
   "greenfield_mode": true,
   "greenfield_patterns": [
-    "// deprecated",
-    "// legacy",
-    "// TODO: remove",
+    "deprecated",
+    "legacy",
+    "TODO.*remove",
     "@deprecated"
   ]
 }
@@ -72,17 +73,19 @@ Override the default cruft patterns:
 
 ## Default Patterns
 
-The following patterns are detected by default:
+The following patterns are detected by default (case-insensitive):
 
-- `// deprecated`, `# deprecated`, `@deprecated`
-- `// legacy`, `# legacy`
-- `// old:`, `// TODO: remove after migration`
-- `// backwards compat`, `// for compatibility`
+- `deprecated`, `@deprecated`
+- `legacy`, `obsolete`
+- `backwards.compat`, `backward.compat`
+- `for.compatibility`, `compat.shim`
+- `TODO.*remove`, `TODO.*migrate`
 
 ## Hooks
 
 | Event | Behavior |
 |-------|----------|
+| SessionStart | Display greenfield mode status |
 | PostToolUse (Edit/Write) | Check edited file for cruft patterns |
 | Stop | Remind about greenfield rules |
 
@@ -96,7 +99,7 @@ This plugin is part of the [vibe-hacker](https://github.com/mjrskiles/vibe-hacke
 
 - **greenfield-mode** (this plugin) - Cruft prevention for prototypes
 - **primer** - Context priming
-- **planning** - ADRs, FDPs, Action Plans, Roadmap
+- **planning** - ADRs, FDPs, Action Plans, Reports, Roadmap
 - **expert-agents** - Klaus, Librodotus, Shawn
 
 ## License

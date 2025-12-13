@@ -1,3 +1,15 @@
+---
+type: fdp
+id: FDP-004
+status: proposed
+created: 2025-12-13
+modified: 2025-12-13
+supersedes: null
+superseded_by: null
+obsoleted_by: null
+related: []
+---
+
 # FDP-004: New Project Bootstrap Experience
 
 ## Status
@@ -365,3 +377,7 @@ Detect empty directory and offer to bootstrap.
 
 - [FDP-003: Multi-Plugin Architecture](FDP-003-split-into-multi-plugin-architecture.md) - Bootstrap lives in `planning` plugin
 - [Claude Code AskUserQuestion](https://docs.anthropic.com/claude-code) - Interactive prompts
+
+---
+
+## Addenda

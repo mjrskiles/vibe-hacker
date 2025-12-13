@@ -42,18 +42,21 @@ if ! is_greenfield_enabled; then
     exit 0
 fi
 
-# Default cruft patterns
+# Default cruft patterns (matched case-insensitively via grep -i)
+# Simple readable patterns - no need for [Ll] tricks since grep -i handles it
 DEFAULT_PATTERNS=(
-    '// deprecated'
-    '// legacy'
-    '// old:'
-    '// TODO: remove after migration'
-    '// backwards compat'
-    '// for compatibility'
-    '@deprecated'
-    '# deprecated'
-    '# legacy'
-    '# TODO: remove after migration'
+    'deprecated'
+    'legacy'
+    'obsolete'
+    'backwards.compat'
+    'backward.compat'
+    'for compatibility'
+    'TODO:.*remove.*migrat'
+    'TODO:.*remove.*later'
+    'temporary.*shim'
+    '_unused'
+    're-export'
+    'FIXME:.*compat'
 )
 
 # Load custom patterns from config or use defaults

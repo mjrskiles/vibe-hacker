@@ -1,3 +1,15 @@
+---
+type: ap
+id: AP-001
+status: completed
+created: 2025-12-12
+modified: 2025-12-13
+supersedes: null
+superseded_by: null
+obsoleted_by: null
+related: []
+---
+
 # AP-001: Extract Greenfield Plugin
 
 ## Status
@@ -77,3 +89,7 @@ Greenfield mode is universally useful for any prototype project. It should be a 
 ## References
 
 - [FDP-003: Multi-Plugin Architecture](../feature-designs/FDP-003-split-into-multi-plugin-architecture.md)
+
+---
+
+## Addenda

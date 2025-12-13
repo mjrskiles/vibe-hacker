@@ -2,8 +2,8 @@
   "greenfield_mode": false,
   "debug_mode": false,
   "greenfield_patterns": [
-    "[Dd]eprecated",
-    "[Ll]egacy",
+    "deprecated",
+    "legacy",
     "@deprecated",
     "TODO"
   ],
@@ -13,16 +13,18 @@
       "docs/ARCHITECTURE.md"
     ],
     "globs": [
-      "docs/planning/decision-records/*.md",
+      "docs/planning/decisions/*.md",
       "docs/planning/action-plans/AP-*-*.md"
     ],
     "instructions": "Focus on active action plans and pending decisions."
   },
   "planning": {
+    "version": "0.2.0",
     "subdirs": {
-      "adr": "decision-records",
-      "fdp": "feature-designs",
-      "ap": "action-plans"
+      "adr": "decisions",
+      "fdp": "designs",
+      "ap": "action-plans",
+      "report": "reports"
     }
   },
   "protected_paths": {
@@ -34,13 +36,13 @@
         "message": "Archived documents are read-only historical records."
       },
       {
-        "pattern": "docs/planning/decision-records/[0-9][0-9][0-9]-*.md",
+        "pattern": "docs/planning/decisions/[0-9][0-9][0-9]-*.md",
         "tier": "remind",
         "skill": "planning",
         "message": "Consider using the planning skill scripts to update status or archive ADRs."
       },
       {
-        "pattern": "docs/planning/feature-designs/FDP-*.md",
+        "pattern": "docs/planning/designs/FDP-*.md",
         "tier": "remind",
         "skill": "planning",
         "message": "Consider using the planning skill scripts to update status or archive FDPs."
@@ -50,6 +52,12 @@
         "tier": "remind",
         "skill": "planning",
         "message": "Consider using the planning skill scripts to update status or archive action plans."
+      },
+      {
+        "pattern": "docs/planning/reports/RPT-*.md",
+        "tier": "remind",
+        "skill": "planning",
+        "message": "Consider using the planning skill scripts to update status or archive reports."
       },
       {
         "pattern": "templates/**",

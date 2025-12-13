@@ -1,3 +1,15 @@
+---
+type: adr
+id: ADR-${NUMBER}
+status: proposed
+created: ${DATE}
+modified: ${DATE}
+supersedes: null
+superseded_by: null
+obsoleted_by: null
+related: []
+---
+
 # ADR-${NUMBER}: ${TITLE}
 
 ## Status
@@ -31,3 +43,7 @@ What remains to be determined?
 ## References
 
 Links to related documents, issues, or prior art.
+
+---
+
+## Addenda

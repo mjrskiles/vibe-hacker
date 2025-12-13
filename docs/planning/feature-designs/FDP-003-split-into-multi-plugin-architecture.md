@@ -1,3 +1,15 @@
+---
+type: fdp
+id: FDP-003
+status: completed (2025-12-12)
+created: 2025-12-13
+modified: 2025-12-13
+supersedes: null
+superseded_by: null
+obsoleted_by: null
+related: []
+---
+
 # FDP-003: Split into Multi-Plugin Architecture
 
 ## Status
@@ -249,3 +261,7 @@ Each plugin owns `.claude/<plugin-name>.json`.
 - [ADR-001: Greenfield Mode](../decision-records/001-greenfield-mode.md)
 - [ADR-002: Context Priming](../decision-records/002-context-priming.md)
 - [Claude Code Plugins Reference](https://docs.anthropic.com/claude-code/plugins)
+
+---
+
+## Addenda

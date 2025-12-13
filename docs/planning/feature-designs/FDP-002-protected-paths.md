@@ -1,3 +1,15 @@
+---
+type: fdp
+id: FDP-002
+status: proposed
+created: 2025-12-13
+modified: 2025-12-13
+supersedes: null
+superseded_by: null
+obsoleted_by: null
+related: []
+---
+
 # FDP-002: Protected Paths System
 
 ## Status
@@ -271,3 +283,7 @@ Move archived docs to a separate repository.
 
 - [ADR-001: Greenfield Mode](../decision-records/001-greenfield-mode.md) - Related protection concept
 - [Claude Code Hooks Guide](https://docs.anthropic.com/claude-code/hooks)
+
+---
+
+## Addenda

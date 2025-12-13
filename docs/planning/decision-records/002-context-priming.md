@@ -1,3 +1,15 @@
+---
+type: adr
+id: ADR-002
+status: accepted
+created: 2024-12-08
+modified: 2025-12-13
+supersedes: null
+superseded_by: null
+obsoleted_by: null
+related: []
+---
+
 # ADR-002: Context Priming System
 
 ## Status
@@ -90,3 +102,7 @@ Always load README.md and docs/ARCHITECTURE.md.
 
 - [Claude Code Hooks Guide](https://docs.anthropic.com/claude-code/hooks)
 - [Claude Code Commands](https://docs.anthropic.com/claude-code/commands)
+
+---
+
+## Addenda

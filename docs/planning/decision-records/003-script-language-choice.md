@@ -1,3 +1,15 @@
+---
+type: adr
+id: ADR-003
+status: accepted
+created: 2024-12-09
+modified: 2025-12-13
+supersedes: null
+superseded_by: null
+obsoleted_by: null
+related: []
+---
+
 # ADR-003: Hybrid Bash/Python for Plugin Scripts
 
 ## Status
@@ -91,3 +103,7 @@ None.
 
 - [FDP-002: Protected Paths System](../feature-designs/FDP-002-protected-paths.md) - Uses bash for hook scripts
 - Plugin scripts in `scripts/` directory
+
+---
+
+## Addenda

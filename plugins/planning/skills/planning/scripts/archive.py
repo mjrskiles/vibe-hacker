@@ -9,66 +9,74 @@ Examples:
     archive.py ADR-001
     archive.py FDP-002
     archive.py AP-003
+    archive.py RPT-001
 
 This will:
-    1. Update the document's Status to "Archived"
-    2. Add an "Archived" date
+    1. Update the document's status to "archived" in frontmatter and body
+    2. Add an "Archived" date to the body
     3. Move the file to the archive/ subdirectory
 """
 
 import argparse
-import os
 import re
 import shutil
 import sys
 from datetime import date
 from pathlib import Path
 
-from config import get_doc_dir
-
-
-def get_doc_types() -> dict:
-    """Get document type configurations with paths from config."""
-    return {
-        'adr': {
-            'dir': get_doc_dir('adr'),
-            'pattern': r'^(\d+)-.*\.md$',
-            'id_pattern': r'^ADR-(\d+)$',
-        },
-        'fdp': {
-            'dir': get_doc_dir('fdp'),
-            'pattern': r'^FDP-(\d+)-.*\.md$',
-            'id_pattern': r'^FDP-(\d+)$',
-        },
-        'ap': {
-            'dir': get_doc_dir('ap'),
-            'pattern': r'^AP-(\d+)-.*\.md$',
-            'id_pattern': r'^AP-(\d+)$',
-        },
-    }
+from config import (
+    get_project_dir,
+    get_planning_root,
+    get_type_config,
+)
+from frontmatter import parse_frontmatter, render_frontmatter
 
 
 def parse_doc_id(doc_id: str) -> tuple[str, int]:
-    """Parse document ID into type and number."""
+    """
+    Parse a document ID into type and number.
+
+    Args:
+        doc_id: Document ID like 'ADR-001', 'FDP-002', 'AP-001', 'RPT-001'
+
+    Returns:
+        Tuple of (doc_type, number)
+
+    Raises:
+        ValueError: If ID format is not recognized
+    """
     doc_id = doc_id.upper()
 
-    for doc_type, config in get_doc_types().items():
-        match = re.match(config['id_pattern'], doc_id)
+    patterns = [
+        (r'^ADR-(\d+)$', 'adr'),
+        (r'^FDP-(\d+)$', 'fdp'),
+        (r'^AP-(\d+)$', 'ap'),
+        (r'^RPT-(\d+)$', 'report'),
+    ]
+
+    for pattern, doc_type in patterns:
+        match = re.match(pattern, doc_id)
         if match:
             return doc_type, int(match.group(1))
 
-    raise ValueError(f"Invalid document ID: {doc_id}. Expected format: ADR-001, FDP-002, or AP-003")
+    raise ValueError(f"Invalid document ID: {doc_id}. Expected format: ADR-001, FDP-002, AP-003, or RPT-001")
 
 
 def find_document(doc_type: str, number: int, project_dir: Path) -> Path | None:
-    """Find a document by type and number."""
-    config = get_doc_types()[doc_type]
-    doc_dir = project_dir / config['dir']
+    """Find a document by type and number (not in archive)."""
+    type_config = get_type_config(doc_type)
+    planning_root = project_dir / get_planning_root()
+    doc_dir = planning_root / type_config['dir']
 
     if not doc_dir.exists():
         return None
 
-    pattern = re.compile(config['pattern'])
+    # Build pattern based on type config
+    prefix = type_config.get('prefix', '')
+    if prefix:
+        pattern = re.compile(rf'^{re.escape(prefix)}(\d+)-.*\.md$')
+    else:
+        pattern = re.compile(r'^(\d+)-.*\.md$')
 
     for f in doc_dir.iterdir():
         if f.is_file():
@@ -79,43 +87,39 @@ def find_document(doc_type: str, number: int, project_dir: Path) -> Path | None:
     return None
 
 
-def update_status(filepath: Path, new_status: str = "Archived") -> str:
-    """Update the Status section in a markdown document."""
-    content = filepath.read_text()
+def update_status_in_content(content: str, new_status: str = "Archived") -> str:
+    """Update status in both frontmatter and body."""
+    today = date.today().isoformat()
 
-    # Pattern to match the Status section
-    # Handles: ## Status\n\nValue or ## Status\nValue
+    # Parse frontmatter
+    frontmatter, body = parse_frontmatter(content)
+
+    # Update frontmatter if present
+    if frontmatter:
+        frontmatter['status'] = new_status.lower()
+        frontmatter['modified'] = today
+        content = render_frontmatter(frontmatter) + body
+
+    # Update body status section
     status_pattern = r'(## Status\s*\n\s*\n?)([^\n#]+)'
 
     def replace_status(match):
         prefix = match.group(1)
         return f"{prefix}{new_status}"
 
-    new_content, count = re.subn(status_pattern, replace_status, content)
+    content, count = re.subn(status_pattern, replace_status, content)
 
-    if count == 0:
-        raise ValueError(f"Could not find Status section in {filepath}")
+    # Add Archived date section if not present
+    if '## Archived' not in content:
+        archived_section = f"\n## Archived\n\n{today}\n"
 
-    # Add Archived date if not present
-    if 'Archived' not in filepath.read_text() or new_status == "Archived":
-        # Try to add after Status section
-        archived_date = f"\n## Archived\n\n{date.today().isoformat()}\n"
-
-        # Find position after Status section value
-        status_match = re.search(r'## Status\s*\n\s*\n?[^\n#]+\n', new_content)
+        # Find position after Status section
+        status_match = re.search(r'## Status\s*\n\s*\n?[^\n#]+\n', content)
         if status_match:
             insert_pos = status_match.end()
-            # Check if next section exists
-            next_section = re.search(r'\n## ', new_content[insert_pos:])
-            if next_section:
-                # Insert before next section
-                new_content = (
-                    new_content[:insert_pos] +
-                    archived_date +
-                    new_content[insert_pos:]
-                )
+            content = content[:insert_pos] + archived_section + content[insert_pos:]
 
-    return new_content
+    return content
 
 
 def archive_document(doc_id: str, project_dir: Path) -> Path:
@@ -128,11 +132,12 @@ def archive_document(doc_id: str, project_dir: Path) -> Path:
         raise FileNotFoundError(f"Document not found: {doc_id}")
 
     # Check if already archived
-    if 'archive' in str(filepath):
+    if 'archive' in filepath.parts:
         raise ValueError(f"Document is already archived: {filepath}")
 
     # Update status
-    new_content = update_status(filepath)
+    content = filepath.read_text()
+    new_content = update_status_in_content(content)
     filepath.write_text(new_content)
 
     # Create archive directory
@@ -155,12 +160,12 @@ def main():
     )
     parser.add_argument(
         'doc_id',
-        help='Document ID (e.g., ADR-001, FDP-002, AP-003)'
+        help='Document ID (e.g., ADR-001, FDP-002, AP-003, RPT-001)'
     )
     parser.add_argument(
         '--project-dir',
         type=Path,
-        default=Path(os.environ.get('CLAUDE_PROJECT_DIR', '.')),
+        default=get_project_dir(),
         help='Project directory (default: CLAUDE_PROJECT_DIR or current dir)'
     )
 

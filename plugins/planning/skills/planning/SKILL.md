@@ -1,6 +1,6 @@
 ---
 name: planning
-description: Manage planning documents (ADRs, FDPs, action plans). Use when creating, archiving, or listing planning docs. Enforces proper numbering and structure.
+description: Manage planning documents (ADRs, FDPs, action plans, reports). Use when creating, archiving, or listing planning docs. Enforces proper numbering and structure.
 allowed-tools: Read, Write, Bash, Glob, Grep
 ---
 
@@ -10,51 +10,74 @@ Manage planning documents with proper structure, numbering, and lifecycle.
 
 ## Document Types
 
-| Type | Purpose | Naming |
-|------|---------|--------|
-| ADR | Architecture Decision Record - captures a decision and its context | `NNN-slug.md` |
-| FDP | Feature Design Proposal - designs a feature before implementation | `FDP-NNN-slug.md` |
-| AP | Action Plan - tracks implementation steps for a task | `AP-NNN-slug.md` |
-| Roadmap | Project goals and vision (immediate, medium, long term) | `roadmap.md` |
+| Type | Purpose | ID Format | Default Directory |
+|------|---------|-----------|-------------------|
+| ADR | Architecture Decision Record | `ADR-001` | `decisions/` |
+| FDP | Feature Design Proposal | `FDP-001` | `designs/` |
+| AP | Action Plan | `AP-001` | `action-plans/` |
+| Report | Reports and analysis | `RPT-001` | `reports/` |
+| Roadmap | Project goals and vision | N/A | `roadmap.md` |
 
-## Roadmap
+## Document Format (v0.2.0)
 
-The roadmap is a single markdown file tracking project goals at different time horizons:
+All documents have YAML frontmatter for structured metadata:
 
-- **Immediate** (This Week) - Current focus
-- **Medium Term** (This Month) - Coming up next
-- **Long Term** (This Quarter+) - Vision and direction
-- **Recently Completed** - What was just finished
+```yaml
+---
+type: adr
+id: ADR-001
+status: proposed
+created: 2025-12-13
+modified: 2025-12-13
+supersedes: null
+superseded_by: null
+obsoleted_by: null
+related: []
+---
 
-### Initialize Roadmap
+# ADR-001: Title Here
 
-```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/init-roadmap.py
+## Status
+Proposed
+
+...content...
+
+---
+
+## Addenda
 ```
 
-This creates `<planning_root>/roadmap.md` from the template.
+### Frontmatter Fields
 
-### Keeping it Updated
+| Field | Description |
+|-------|-------------|
+| `type` | Document type (adr, fdp, ap, report) |
+| `id` | Display ID (ADR-001, FDP-002, etc.) |
+| `status` | Current lifecycle status |
+| `created` | ISO date of creation |
+| `modified` | ISO date of last modification |
+| `supersedes` | ID of document this replaces |
+| `superseded_by` | ID of document that replaced this |
+| `obsoleted_by` | ID or reason for obsolescence |
+| `related` | List of related document IDs |
 
-A **PreCompact hook** reminds you to update the roadmap before context compaction:
-1. Move completed items to "Recently Completed"
-2. Update "Immediate" goals based on progress
-3. Adjust priorities as needed
-4. Update the "Last updated" date
+### Addenda Section
 
-The roadmap is human-editable and should be updated regularly to reflect project state.
+Documents have an append-only addenda section at the bottom. This allows adding notes, clarifications, and updates to locked documents without modifying the original content.
 
 ## Configuration
 
-Configure planning directories in `vibe-hacker.json`:
+Configure planning in `.claude/vibe-hacker.json`:
 
 ```json
 {
   "planning": {
+    "version": "0.2.0",
     "subdirs": {
-      "adr": "decision-records",
-      "fdp": "feature-designs",
-      "ap": "action-plans"
+      "adr": "decisions",
+      "fdp": "designs",
+      "ap": "action-plans",
+      "report": "reports"
     }
   },
   "protected_paths": {
@@ -65,22 +88,20 @@ Configure planning directories in `vibe-hacker.json`:
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| `protected_paths.planning_root` | `docs/planning` | Root directory for all planning docs |
-| `planning.subdirs.adr` | `decision-records` | Subdirectory for ADRs |
-| `planning.subdirs.fdp` | `feature-designs` | Subdirectory for FDPs |
+| `planning.version` | `0.1.0` | Schema version |
+| `planning.subdirs.adr` | `decisions` | Subdirectory for ADRs |
+| `planning.subdirs.fdp` | `designs` | Subdirectory for FDPs |
 | `planning.subdirs.ap` | `action-plans` | Subdirectory for Action Plans |
-
-With the defaults above, documents are created at:
-- ADRs: `docs/planning/decision-records/NNN-slug.md`
-- FDPs: `docs/planning/feature-designs/FDP-NNN-slug.md`
-- Action Plans: `docs/planning/action-plans/AP-NNN-slug.md`
+| `planning.subdirs.report` | `reports` | Subdirectory for Reports |
+| `protected_paths.planning_root` | `docs/planning` | Root directory for all planning docs |
 
 ## When to Use This Skill
 
 Use the planning scripts when:
-- Creating a new planning document (ensures proper numbering)
+- Creating a new planning document (ensures proper numbering and frontmatter)
 - Updating a document's status (e.g., Proposed → Accepted)
-- Editing a document (validates status allows editing)
+- Adding an addendum to a locked document
+- Creating a document that supersedes another
 - Archiving a completed or superseded document
 - Listing active planning documents
 
@@ -96,31 +117,61 @@ All scripts are in `${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/`.
 python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/new.py <type> "<title>"
 ```
 
+Types: `adr`, `fdp`, `ap`, `report`
+
 Examples:
 ```bash
 python3 scripts/new.py adr "Use PostgreSQL for persistence"
-# Creates: <planning_root>/decision-records/004-use-postgresql-for-persistence.md
-
 python3 scripts/new.py fdp "User Authentication System"
-# Creates: <planning_root>/feature-designs/FDP-003-user-authentication-system.md
-
 python3 scripts/new.py ap "Implement login flow"
-# Creates: <planning_root>/action-plans/AP-001-implement-login-flow.md
+python3 scripts/new.py report "Q4 Performance Analysis"
 ```
 
-### Archive Document
+### Add Addendum
+
+Add notes or updates to any document, even locked ones:
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/archive.py <doc-id>
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/append.py <doc-id> "<title>" [--body "<content>"]
 ```
 
 Examples:
 ```bash
-python3 scripts/archive.py ADR-001
-# Moves to archive/, updates status to "Archived"
+python3 scripts/append.py ADR-001 "Performance Clarification"
+python3 scripts/append.py ADR-001 "Migration note" --body "Use pg_dump for best results"
+```
 
-python3 scripts/archive.py FDP-002
-# Moves to archive/, updates status to "Archived"
+### Supersede Document
+
+Create a new document that supersedes an existing one:
+
+```bash
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/supersede.py <old-doc-id> "<new-title>"
+```
+
+This will:
+1. Create a new document of the same type
+2. Link the new document to the old (supersedes field)
+3. Update the old document (superseded_by field, status)
+4. Add an addendum to the old document
+
+Example:
+```bash
+python3 scripts/supersede.py ADR-001 "Revised Database Strategy"
+```
+
+### Add Related Links
+
+Link documents together:
+
+```bash
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/relate.py <doc-id> <related-ids...> [--bidirectional]
+```
+
+Examples:
+```bash
+python3 scripts/relate.py ADR-001 FDP-003
+python3 scripts/relate.py ADR-001 FDP-003 ADR-002 --bidirectional
 ```
 
 ### Update Status
@@ -132,73 +183,79 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/update-status.py <doc-id> 
 Examples:
 ```bash
 python3 scripts/update-status.py ADR-001 accepted
-# Updates ADR-001 status from Proposed to Accepted
-
 python3 scripts/update-status.py FDP-002 "in progress"
-# Updates FDP-002 status to In Progress
-
-python3 scripts/update-status.py AP-001 completed
-# Updates AP-001 status to Completed (suggests archiving)
+python3 scripts/update-status.py RPT-001 published
 ```
 
 Valid statuses by type:
 - **ADR**: proposed, accepted, deprecated, superseded
 - **FDP**: proposed, in progress, implemented, abandoned
 - **AP**: active, completed, abandoned
+- **Report**: draft, published, superseded, obsoleted
+
+### Archive Document
+
+```bash
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/archive.py <doc-id>
+```
+
+Examples:
+```bash
+python3 scripts/archive.py ADR-001
+python3 scripts/archive.py FDP-002
+```
 
 ### Check Edit Permission
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/edit.py <doc-id>
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/edit.py <doc-id> [--force] [--quiet]
 ```
 
 Checks if a document can be edited based on its status. Outputs the file path if editable.
-
-Examples:
-```bash
-python3 scripts/edit.py ADR-001
-# If Proposed: outputs path, exit 0
-# If Accepted: outputs error, exit 1
-
-python3 scripts/edit.py FDP-002 --force
-# Force edit even if locked (outputs warning)
-
-python3 scripts/edit.py AP-001 --quiet
-# Only output path, no messages
-```
 
 **Locked statuses** (require `--force` to edit):
 - **ADR**: accepted, deprecated, superseded
 - **FDP**: implemented, abandoned
 - **AP**: completed, abandoned
+- **Report**: published, superseded, obsoleted
+
+**Tip**: Use `append.py` to add an addendum instead of force-editing locked documents.
 
 ### List Documents
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/list.py [--type TYPE] [--status STATUS]
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/list.py [--type TYPE] [--status STATUS] [--include-archived]
 ```
 
 Examples:
 ```bash
 python3 scripts/list.py
-# Lists all active planning documents
-
 python3 scripts/list.py --type adr
-# Lists only ADRs
-
+python3 scripts/list.py --type report
 python3 scripts/list.py --status proposed
-# Lists documents with "Proposed" status
+python3 scripts/list.py --include-archived
+```
+
+### Migration (vibe-doc)
+
+Upgrade existing documents to the latest format:
+
+```bash
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/vibe-doc.py status
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/vibe-doc.py upgrade --dry-run
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/vibe-doc.py upgrade
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/vibe-doc.py changelog 0.2.0
 ```
 
 ## Document Lifecycle
 
 ### ADR Lifecycle
 ```
-Proposed → Accepted → [Superseded by ADR-NNN | Deprecated]
+Proposed → Accepted → [Superseded | Deprecated]
 ```
 
 - **Proposed**: Under discussion, can be edited
-- **Accepted**: Decision made, becomes read-only
+- **Accepted**: Decision made, becomes read-only (use addenda for updates)
 - **Superseded**: Replaced by newer ADR, archived
 - **Deprecated**: No longer applicable, archived
 
@@ -221,14 +278,41 @@ Active → [Completed | Abandoned]
 - **Completed**: All tasks done, archived
 - **Abandoned**: Work stopped, archived
 
+### Report Lifecycle
+```
+Draft → Published → [Superseded | Obsoleted]
+```
+
+- **Draft**: Being written, can be edited
+- **Published**: Final, read-only (use addenda for updates)
+- **Superseded**: Replaced by newer report
+- **Obsoleted**: No longer relevant
+
+## Roadmap
+
+The roadmap is a single markdown file tracking project goals at different time horizons:
+
+- **Immediate** (This Week) - Current focus
+- **Medium Term** (This Month) - Coming up next
+- **Long Term** (This Quarter+) - Vision and direction
+- **Recently Completed** - What was just finished
+
+### Initialize Roadmap
+
+```bash
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/planning/scripts/init-roadmap.py
+```
+
+A **PreCompact hook** reminds you to update the roadmap before context compaction.
+
 ## Protected Paths
 
-Planning documents are configured with protection rules in `vibe-hacker.json`:
+Planning documents are configured with protection rules:
 
 - **Archived documents** (`readonly` tier): Cannot be edited
 - **Active planning documents** (`remind` tier): Editable with a warning suggesting skill scripts
 
-The `edit.py` script provides additional validation based on document status (e.g., accepted ADRs are locked).
+The `edit.py` script provides additional validation based on document status.
 
 ## Templates
 
@@ -236,6 +320,7 @@ Templates are in `${CLAUDE_PLUGIN_ROOT}/skills/planning/templates/`:
 - `adr.md` - Architecture Decision Record
 - `fdp.md` - Feature Design Proposal
 - `action-plan.md` - Action Plan
+- `report.md` - Report
 - `roadmap.md` - Project Roadmap
 
-The `new.py` script automatically uses the correct template. Use `init-roadmap.py` to initialize the roadmap.
+All templates include frontmatter and an addenda section.
