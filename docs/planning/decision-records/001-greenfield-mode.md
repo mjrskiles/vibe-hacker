@@ -3,7 +3,7 @@ type: adr
 id: ADR-001
 status: accepted
 created: 2024-12-08
-modified: '2025-12-13'
+modified: '2025-12-15'
 supersedes: null
 superseded_by: null
 obsoleted_by: null
@@ -96,3 +96,6 @@ Use only pattern matching without LLM review.
 ### 2025-12-13: v0.2.0 Migration Test
 
 This addendum was added to test the append functionality on locked documents.
+### 2025-12-15: v2 Validation Test
+
+This addendum confirms the append workflow works correctly for locked documents.

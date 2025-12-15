@@ -19,7 +19,7 @@
     "instructions": "Focus on active action plans and pending decisions."
   },
   "planning": {
-    "version": "0.2.0",
+    "version": "0.2.1",
     "subdirs": {
       "adr": "decisions",
       "fdp": "designs",

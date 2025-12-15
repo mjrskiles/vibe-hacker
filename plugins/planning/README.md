@@ -4,7 +4,7 @@ A Claude Code plugin for structured planning documents with protected paths.
 
 ## Features
 
-### Planning Documents (v0.2.0)
+### Planning Documents (v0.2.1)
 
 Manage ADRs, FDPs, Action Plans, Reports, and Roadmaps with:
 - YAML frontmatter for structured metadata
@@ -49,7 +49,7 @@ python3 scripts/list.py --type report
 python3 scripts/archive.py ADR-001
 ```
 
-### New in v0.2.0
+### New in v0.2.1
 
 **Add addenda to locked documents**:
 ```bash
@@ -101,7 +101,7 @@ Create `.claude/vibe-hacker.json` in your project:
 ```json
 {
   "planning": {
-    "version": "0.2.0",
+    "version": "0.2.1",
     "subdirs": {
       "adr": "decisions",
       "fdp": "designs",

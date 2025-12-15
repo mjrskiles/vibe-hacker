@@ -56,7 +56,7 @@
     ]
   },
   "planning": {
-    "version": "0.2.0",
+    "version": "0.2.1",
     "subdirs": {
       "adr": "decision-records",
       "fdp": "feature-designs",
