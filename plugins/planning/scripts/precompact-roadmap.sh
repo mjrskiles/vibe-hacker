@@ -21,18 +21,27 @@ ROADMAP_FILE="$PROJECT_DIR/$PLANNING_ROOT/roadmap.md"
 
 # Only remind if roadmap exists
 if [[ -f "$ROADMAP_FILE" ]]; then
-    cat << 'EOF'
-ROADMAP UPDATE REMINDER
+    # Display to user terminal (stderr)
+    echo "ROADMAP UPDATE REMINDER - Review before compaction" >&2
 
-Before context compaction, please review and update the project roadmap:
+    # Inject reminder into Claude's context (stdout JSON)
+    context="ROADMAP UPDATE REMINDER: Before context compaction, please review and update the project roadmap at $PLANNING_ROOT/roadmap.md:
 
-1. Move completed items to "Recently Completed" section
-2. Update "Immediate" goals based on current progress
-3. Adjust priorities in "Medium Term" and "Long Term" as needed
-4. Update the "Last updated" date
+1. Move completed items to 'Recently Completed' section
+2. Update 'Immediate' goals based on current progress
+3. Adjust priorities in 'Medium Term' and 'Long Term' as needed
+4. Update the 'Last updated' date"
 
+    context=$(echo "$context" | jq -Rs '.')
+
+    cat <<EOF
+{
+  "hookSpecificOutput": {
+    "hookEventName": "PreCompact",
+    "additionalContext": ${context}
+  }
+}
 EOF
-    echo "Roadmap location: $PLANNING_ROOT/roadmap.md"
 fi
 
 exit 0

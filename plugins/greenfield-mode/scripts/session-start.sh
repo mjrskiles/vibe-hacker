@@ -39,6 +39,7 @@ is_strict_mode() {
 
 main() {
     if is_greenfield_enabled; then
+        # Display to user terminal (stderr)
         echo "" >&2
         echo -e "${GREEN}GREENFIELD MODE${NC} ${CYAN}enabled${NC}" >&2
         if is_strict_mode; then
@@ -48,6 +49,21 @@ main() {
         fi
         echo -e "  No backwards compatibility needed. Delete, don't deprecate." >&2
         echo "" >&2
+
+        # Inject context into Claude (stdout JSON)
+        local context="GREENFIELD MODE ACTIVE: This is a prototype project with zero users. When making changes: DELETE old code entirely (don't deprecate or comment out), NO backwards-compatibility shims or re-exports, NO deprecation comments, NO migration documentation. Clean breaks only."
+
+        # Escape for JSON
+        context=$(echo "$context" | jq -Rs '.')
+
+        cat <<EOF
+{
+  "hookSpecificOutput": {
+    "hookEventName": "SessionStart",
+    "additionalContext": ${context}
+  }
+}
+EOF
     fi
 
     exit 0

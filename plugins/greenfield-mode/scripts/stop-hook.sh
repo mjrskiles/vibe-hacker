@@ -10,16 +10,18 @@ CONFIG_FILE="${CLAUDE_PROJECT_DIR:-.}/.claude/vibe-hacker.json"
 if [[ -f "$CONFIG_FILE" ]]; then
     enabled=$(jq -r '.greenfield_mode // false' "$CONFIG_FILE" 2>/dev/null || echo "false")
     if [[ "$enabled" == "true" ]]; then
+        # Inject greenfield reminder into Claude's context via additionalContext
         cat << 'EOF'
 {
-    "decision": "approve",
-    "reason": "GREENFIELD: No backwards compatibility, no deprecation comments, delete unused code."
+  "hookSpecificOutput": {
+    "hookEventName": "Stop",
+    "additionalContext": "GREENFIELD SESSION ENDING: Before completing, verify no backwards-compatibility cruft was introduced. Check for: deprecation comments, legacy/obsolete markers, re-exports for compatibility, _unused variable renames, migration documentation. Delete old code entirely - don't deprecate or comment it out."
+  }
 }
 EOF
         exit 0
     fi
 fi
 
-# Greenfield mode not enabled
-echo '{"decision": "approve", "reason": "Greenfield mode not enabled"}'
+# Greenfield mode not enabled - no output needed
 exit 0

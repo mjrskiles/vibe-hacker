@@ -14,6 +14,13 @@ set -euo pipefail
 
 CONFIG_FILE="${CLAUDE_PROJECT_DIR:-.}/.claude/vibe-hacker.json"
 
+# Default excludes - config files that contain pattern definitions
+DEFAULT_EXCLUDES=(
+    '*.json'
+    '*.yaml'
+    '*.yml'
+)
+
 # Check if greenfield mode is enabled
 is_greenfield_enabled() {
     if [[ -f "$CONFIG_FILE" ]]; then
@@ -23,6 +30,64 @@ is_greenfield_enabled() {
     else
         return 1
     fi
+}
+
+# Load exclude patterns from config or use defaults
+load_excludes() {
+    if [[ -f "$CONFIG_FILE" ]]; then
+        local excludes_json
+        excludes_json=$(jq -r '.greenfield_exclude // empty' "$CONFIG_FILE" 2>/dev/null || true)
+
+        if [[ -n "$excludes_json" && "$excludes_json" != "null" ]]; then
+            local excludes=()
+            while IFS= read -r pattern; do
+                [[ -n "$pattern" ]] && excludes+=("$pattern")
+            done < <(echo "$excludes_json" | jq -r '.[]' 2>/dev/null)
+
+            if [[ ${#excludes[@]} -gt 0 ]]; then
+                # Merge with defaults
+                EXCLUDE_PATTERNS=("${DEFAULT_EXCLUDES[@]}" "${excludes[@]}")
+                return
+            fi
+        fi
+    fi
+    EXCLUDE_PATTERNS=("${DEFAULT_EXCLUDES[@]}")
+}
+
+# Check if file matches any exclude pattern
+is_excluded() {
+    local file="$1"
+    local basename
+    basename=$(basename "$file")
+
+    # Auto-exclude plugin's own directory (meta-documentation)
+    if [[ -n "${CLAUDE_PLUGIN_ROOT:-}" ]]; then
+        local normalized_root normalized_file
+        normalized_root=$(cd "$CLAUDE_PLUGIN_ROOT" 2>/dev/null && pwd)
+        normalized_file=$(cd "$(dirname "$file")" 2>/dev/null && pwd)/$(basename "$file")
+        if [[ -n "$normalized_root" && "$normalized_file" == "$normalized_root"* ]]; then
+            return 0
+        fi
+    fi
+
+    shopt -s extglob nullglob
+    for pattern in "${EXCLUDE_PATTERNS[@]}"; do
+        # Check against full path and basename
+        if [[ "$file" == $pattern ]] || [[ "$basename" == $pattern ]]; then
+            return 0
+        fi
+        # Handle ** glob patterns
+        if [[ "$pattern" == *"**"* ]]; then
+            # Convert ** to regex-like matching
+            local regex_pattern="${pattern//\*\*/.*}"
+            regex_pattern="${regex_pattern//\*/[^/]*}"
+            if [[ "$file" =~ $regex_pattern ]]; then
+                return 0
+            fi
+        fi
+    done
+    shopt -u extglob nullglob
+    return 1
 }
 
 # Check if strict mode is enabled (block instead of warn)
@@ -81,6 +146,7 @@ load_patterns() {
 }
 
 load_patterns
+load_excludes
 
 # Colors
 YELLOW='\033[1;33m'
@@ -93,18 +159,34 @@ check_file() {
 
     [[ ! -f "$file" ]] && return 0
 
+    # Check exclusions
+    if is_excluded "$file"; then
+        return 0
+    fi
+
     # Skip binary files
     if file "$file" 2>/dev/null | grep -q "binary\|executable\|image"; then
         return 0
     fi
 
+    # For markdown files, strip backticked content before checking
+    # Backticks indicate meta-references (documenting patterns, not using them)
+    local content
+    if [[ "$file" == *.md ]]; then
+        # Remove fenced code blocks (```...```) and inline code (`...`)
+        content=$(sed -e '/^```/,/^```/d' -e 's/`[^`]*`//g' "$file")
+    else
+        content=$(cat "$file")
+    fi
+
     for pattern in "${CRUFT_PATTERNS[@]}"; do
-        if grep -qi "$pattern" "$file" 2>/dev/null; then
+        if echo "$content" | grep -qi "$pattern" 2>/dev/null; then
             if [[ $found -eq 0 ]]; then
-                echo -e "${YELLOW}Cruft detected in: $file${NC}" >&2
+                echo -e "${YELLOW}Potential cruft in: $file${NC}" >&2
                 found=1
             fi
-            echo -e "  ${RED}→${NC} '$pattern'" >&2
+            echo -e "  ${YELLOW}→${NC} '$pattern'" >&2
+            # Show matches from original file for context
             grep -n -i "$pattern" "$file" 2>/dev/null | head -2 | sed 's/^/    /' >&2
         fi
     done
@@ -130,15 +212,36 @@ main() {
     fi
 
     if ! check_file "$file_path"; then
+        # Display friendly reminder to user terminal (stderr)
         echo "" >&2
-        echo -e "${YELLOW}GREENFIELD REMINDER: No backwards compatibility needed.${NC}" >&2
-        echo -e "${YELLOW}Delete deprecated code, don't comment it.${NC}" >&2
+        echo -e "${YELLOW}Greenfield check: Please review the above matches.${NC}" >&2
+        echo -e "${YELLOW}If intentional, no action needed. Otherwise, consider removing.${NC}" >&2
+
+        # Build context message for Claude
+        local context="Potential cruft detected in $file_path - This is a greenfield project. Please review the flagged patterns (deprecated, legacy, etc). If these are intentional or false positives, no action needed. Otherwise, consider removing backwards-compatibility code since there are no users to migrate."
+        context=$(echo "$context" | jq -Rs '.')
 
         if is_strict_mode; then
-            echo '{"decision": "block", "reason": "Cruft detected in greenfield project. Remove deprecated/legacy patterns before continuing."}'
-            exit 2
+            cat <<EOF
+{
+  "decision": "block",
+  "reason": "Potential cruft detected. Please review and address before continuing.",
+  "hookSpecificOutput": {
+    "hookEventName": "PostToolUse",
+    "additionalContext": ${context}
+  }
+}
+EOF
+            exit 0
         else
-            echo '{"decision": "approve", "reason": "Cruft detected - please clean up (warning only)"}'
+            cat <<EOF
+{
+  "hookSpecificOutput": {
+    "hookEventName": "PostToolUse",
+    "additionalContext": ${context}
+  }
+}
+EOF
             exit 0
         fi
     fi

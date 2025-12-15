@@ -118,6 +118,22 @@ output_allow() {
     exit 0
 }
 
+# Output allow with reminder context
+output_remind() {
+    local message="$1"
+    local file_path="$2"
+
+    jq -n \
+        --arg context "REMINDER for $file_path: $message" \
+        '{
+            hookSpecificOutput: {
+                hookEventName: "PreToolUse",
+                additionalContext: $context
+            }
+        }'
+    exit 0
+}
+
 main() {
     local file_path=""
 
@@ -203,10 +219,10 @@ Pattern: $pattern"
             ;;
 
         remind)
-            # Allow but show reminder on stderr
+            # Allow but show reminder on stderr and inject context
             echo -e "${YELLOW}REMINDER:${NC} $message" >&2
             echo -e "${CYAN}File:${NC} $file_path" >&2
-            output_allow
+            output_remind "$message" "$file_path"
             ;;
 
         *)
