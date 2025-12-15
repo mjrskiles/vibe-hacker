@@ -31,6 +31,13 @@ if [[ -f "$CONFIG_FILE" ]]; then
     [[ "$gf" == "true" ]] && GREENFIELD="enabled"
 fi
 
+# Check haiku mode
+HAIKU="disabled"
+if [[ -f "$CONFIG_FILE" ]]; then
+    hk=$(jq -r '.priming.haiku // false' "$CONFIG_FILE" 2>/dev/null || echo "false")
+    [[ "$hk" == "true" ]] && HAIKU="enabled"
+fi
+
 # Load priming config
 if [[ -f "$CONFIG_FILE" ]]; then
     # Get instructions
@@ -104,4 +111,11 @@ for file in "${UNIQUE[@]}"; do
     echo ""
 done
 
+# Output haiku mode status for prompt hook
+if [[ "$HAIKU" == "enabled" ]]; then
+    echo "Haiku mode: ENABLED"
+else
+    echo "Haiku mode: DISABLED"
+fi
+echo ""
 echo "=== END PRIMING ==="

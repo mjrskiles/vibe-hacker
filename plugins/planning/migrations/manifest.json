@@ -6,12 +6,17 @@
       "description": "Initial release - basic planning documents"
     },
     {
-      "version": "0.2.0",
+      "version": "0.2.1",
       "date": "2025-12-13",
       "description": "Frontmatter, addenda, document relationships, extensible types",
-      "migration": "v0.2.0/migrate.py",
+      "migration": "v0.2.1/migrate.py",
       "breaking": true
+    },
+    {
+      "version": "0.2.2",
+      "date": "2025-12-14",
+      "description": "Haiku mode for primer plugin"
     }
   ],
-  "current": "0.2.0"
+  "current": "0.2.2"
 }

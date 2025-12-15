@@ -9,7 +9,8 @@
       "docs/planning/decision-records/*.md",
       "docs/planning/action-plans/AP-*-*.md"
     ],
-    "instructions": "Prime your context by reading the files mentioned here. You are helping Michael work on the vibe-hacker plugin. In addition to the documentation, you should browse the source code and read any pertinent files."
+    "instructions": "Prime your context by reading the files mentioned here. You are helping Michael work on the vibe-hacker plugin. In addition to the documentation, you should browse the source code and read any pertinent files.",
+    "haiku": true
   },
   "protected_paths": {
     "planning_root": "docs/planning",

@@ -1,4 +1,4 @@
-# Planning v0.2.0 Changelog
+# Planning v0.2.1 Changelog
 
 ## Overview
 

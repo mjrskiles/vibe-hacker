@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Migration to v0.2.0
+Migration to v0.2.1
 
 Adds frontmatter to all planning documents and updates configuration.
 """
@@ -158,7 +158,7 @@ related: []
 
 def migrate_document(filepath: Path, planning_root: Path) -> dict:
     """
-    Migrate a single document to v0.2.0 format.
+    Migrate a single document to v0.2.1 format.
 
     Returns dict with migration details.
     """
@@ -236,7 +236,7 @@ def dry_run(project_dir: Path) -> list[str]:
 
     # Config changes
     version = config.get('planning', {}).get('version', '0.1.0')
-    if version < '0.2.0':
+    if version < '0.2.1':
         changes.append("Update config: planning.version -> 0.2.0")
 
     # Document changes
@@ -282,7 +282,7 @@ def migrate(project_dir: Path) -> bool:
     # Update config version
     if 'planning' not in config:
         config['planning'] = {}
-    config['planning']['version'] = '0.2.0'
+    config['planning']['version'] = '0.2.1'
     save_config(project_dir, config)
 
     print(f"\nMigration complete:")
@@ -303,7 +303,7 @@ def rollback(project_dir: Path) -> bool:
     The migration adds content (frontmatter) but doesn't remove anything.
     Manual cleanup would be required to rollback.
     """
-    print("Rollback not supported for v0.2.0 migration.")
+    print("Rollback not supported for v0.2.1 migration.")
     print("Manual removal of frontmatter would be required.")
     return False
 
@@ -326,4 +326,4 @@ if __name__ == '__main__':
             success = migrate(project_dir)
             sys.exit(0 if success else 1)
         else:
-            print("Migration not applicable (already at v0.2.0 or higher)")
+            print("Migration not applicable (already at v0.2.1 or higher)")

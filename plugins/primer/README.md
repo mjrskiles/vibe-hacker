@@ -36,6 +36,7 @@ Create `.claude/vibe-hacker.json` in your project:
 | `priming.files` | string[] | Explicit files to load |
 | `priming.globs` | string[] | Glob patterns for multiple files |
 | `priming.instructions` | string | Custom text shown during priming |
+| `priming.haiku` | boolean | Generate a haiku after priming (default: false) |
 
 ### Fallback Behavior
 
@@ -58,6 +59,29 @@ REMINDER: This is a prototype project with no users.
 ```
 
 This works whether or not the greenfield-mode plugin is installed.
+
+## Haiku Mode
+
+Enable `priming.haiku: true` to have Claude write a haiku after priming:
+
+```json
+{
+  "priming": {
+    "haiku": true
+  }
+}
+```
+
+The haiku is generated based on the primed content and serves as:
+- A creative summary of the project/context
+- Confirmation that Claude is primed and aware
+
+Example output after priming a synth firmware project:
+```
+Signals flow like streams
+Through circuits, music emerges
+Code becomes the song
+```
 
 ## Commands
 
