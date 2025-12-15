@@ -4,14 +4,9 @@
 # Loads project context from .claude/vibe-hacker.json config.
 # Falls back to README.md / CLAUDE.md if no config.
 #
-# Config format:
-# {
-#   "priming": {
-#     "files": ["README.md", "docs/ARCHITECTURE.md"],
-#     "globs": ["docs/planning/**/*.md"],
-#     "instructions": "Custom instructions..."
-#   }
-# }
+# Output strategy:
+# - stderr: Priming display (for user's terminal)
+# - stdout: JSON with additionalContext (for Claude's context injection)
 
 set -euo pipefail
 
@@ -81,41 +76,64 @@ for f in "${FILES[@]}"; do
     fi
 done
 
-# Output
-echo "=== CONTEXT PRIMING ==="
-echo ""
+# Display to stderr (user sees this in terminal)
+{
+    echo "=== CONTEXT PRIMING ==="
+    echo ""
+
+    if [[ "$GREENFIELD" == "enabled" ]]; then
+        echo "Greenfield mode: ENABLED"
+        echo ""
+    fi
+
+    if [[ "$HAIKU" == "enabled" ]]; then
+        echo "Haiku mode: ENABLED"
+        echo ""
+    fi
+
+    if [[ -n "$INSTRUCTIONS" ]]; then
+        echo "Instructions: $INSTRUCTIONS"
+        echo ""
+    fi
+
+    echo "Loading ${#UNIQUE[@]} files: ${UNIQUE[*]}"
+    echo ""
+    echo "=== END PRIMING ==="
+} >&2
+
+# Build context for Claude (stdout as JSON)
+# Include file contents and haiku request in additionalContext
+CONTEXT_PARTS=()
 
 if [[ "$GREENFIELD" == "enabled" ]]; then
-    echo "Greenfield mode: ENABLED"
-    echo ""
-    echo "REMINDER: This is a prototype project with no users."
-    echo "- Delete old code, don't comment it out"
-    echo "- No backwards compatibility needed"
-    echo "- No deprecation comments"
-    echo ""
+    CONTEXT_PARTS+=("GREENFIELD MODE: This is a prototype project with zero users. Delete old code entirely, no backwards compatibility needed, no deprecation comments.")
 fi
 
 if [[ -n "$INSTRUCTIONS" ]]; then
-    echo "INSTRUCTIONS: $INSTRUCTIONS"
-    echo ""
+    CONTEXT_PARTS+=("INSTRUCTIONS: $INSTRUCTIONS")
 fi
 
-echo "Loading ${#UNIQUE[@]} files..."
-echo ""
-
+# Add file contents
 for file in "${UNIQUE[@]}"; do
-    echo "=== FILE: $file ==="
-    cat "$file"
-    echo ""
-    echo "=== END: $file ==="
-    echo ""
+    # Read file and escape for JSON
+    content=$(cat "$file" | jq -Rs '.')
+    CONTEXT_PARTS+=("FILE: $file
+${content}")
 done
 
-# Output haiku mode status for prompt hook
 if [[ "$HAIKU" == "enabled" ]]; then
-    echo "Haiku mode: ENABLED"
-else
-    echo "Haiku mode: DISABLED"
+    CONTEXT_PARTS+=("HAIKU REQUEST: Please write a creative haiku (5-7-5 syllables) that captures the essence of this project based on the primed content above. This confirms you are ready.")
 fi
-echo ""
-echo "=== END PRIMING ==="
+
+# Join parts with newlines and escape for JSON
+FULL_CONTEXT=$(printf '%s\n\n' "${CONTEXT_PARTS[@]}" | jq -Rs '.')
+
+# Output JSON to stdout for Claude Code to parse
+cat <<EOF
+{
+  "hookSpecificOutput": {
+    "hookEventName": "SessionStart",
+    "additionalContext": ${FULL_CONTEXT}
+  }
+}
+EOF

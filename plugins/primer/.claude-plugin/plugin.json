@@ -1,6 +1,6 @@
 {
   "name": "primer",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Context priming - load project files on session start",
   "author": {
     "name": "Michael Skiles",

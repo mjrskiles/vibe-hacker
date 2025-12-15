@@ -16,7 +16,12 @@
       "version": "0.2.2",
       "date": "2025-12-14",
       "description": "Haiku mode for primer plugin"
+    },
+    {
+      "version": "0.2.3",
+      "date": "2025-12-14",
+      "description": "Fix haiku mode - embed request in priming output"
     }
   ],
-  "current": "0.2.2"
+  "current": "0.2.3"
 }
