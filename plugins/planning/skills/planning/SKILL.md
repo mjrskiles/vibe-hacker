@@ -18,7 +18,7 @@ Manage planning documents with proper structure, numbering, and lifecycle.
 | Report | Reports and analysis | `RPT-001` | `reports/` |
 | Roadmap | Project goals and vision | N/A | `roadmap.md` |
 
-## Document Format (v0.2.0)
+## Document Format (v0.2.1)
 
 All documents have YAML frontmatter for structured metadata:
 
@@ -72,7 +72,7 @@ Configure planning in `.claude/vibe-hacker.json`:
 ```json
 {
   "planning": {
-    "version": "0.2.0",
+    "version": "0.2.1",
     "subdirs": {
       "adr": "decisions",
       "fdp": "designs",

@@ -97,7 +97,7 @@ All plugins read from `.claude/vibe-hacker.json`:
     "instructions": "Focus on active work."
   },
   "planning": {
-    "version": "0.2.0",
+    "version": "0.2.1",
     "subdirs": {
       "adr": "decisions",
       "fdp": "designs",

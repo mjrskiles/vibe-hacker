@@ -1,9 +1,9 @@
 ---
 type: ap
 id: AP-002
-status: active
+status: completed
 created: 2025-12-13
-modified: 2025-12-15
+modified: '2025-12-16'
 supersedes: null
 superseded_by: null
 obsoleted_by: null
@@ -14,7 +14,7 @@ related: []
 
 ## Status
 
-Active
+Completed
 
 ## Created
 
