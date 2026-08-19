@@ -9,9 +9,7 @@ A collection of Claude Code plugins for hacking, development workflows, and gree
 | [greenfield-mode](plugins/greenfield-mode/) | Prevent backwards-compatibility cruft | Prototype projects |
 | [primer](plugins/primer/) | Context priming on session start | Any project |
 | [librarian](plugins/librarian/) | ADRs, FDPs, Action Plans, Reports, Roadmap | Structured planning |
-| [expert-agents](plugins/expert-agents/) | Klaus, Librodotus, Shawn + build/test/arch/size agents | Code audits, CI tasks |
 | [backlog](plugins/backlog/) | Lightweight project backlogs for ideas and polish items | Task tracking |
-| [briefcase](plugins/briefcase/) | Personal thought management — capture, brief, tidy | Knowledge stewardship |
 
 ## Quick Start
 
@@ -22,10 +20,8 @@ A collection of Claude Code plugins for hacking, development workflows, and gree
 # Install individual plugins
 /plugin install greenfield-mode@vibe-hacker
 /plugin install primer@vibe-hacker
-/plugin install planning@vibe-hacker
-/plugin install expert-agents@vibe-hacker
+/plugin install librarian@vibe-hacker
 /plugin install backlog@vibe-hacker
-/plugin install briefcase@vibe-hacker
 ```
 
 ## Plugin Overview
@@ -54,7 +50,7 @@ Context priming - automatically load project files on session start.
 
 [Full documentation](plugins/primer/README.md)
 
-### planning
+### librarian
 
 Structured planning documents with protected paths.
 
@@ -86,37 +82,6 @@ Lightweight task tracking for ideas, polish items, and small improvements.
 **Config:** `backlog` (root directory)
 
 [Full documentation](plugins/backlog/skills/backlog/SKILL.md)
-
-### briefcase
-
-Personal thought management — capture stray ideas, brief on topics, reorganize.
-
-**Features:**
-- Quick capture with automatic topic triage
-- Synthesized briefings (not regurgitation)
-- Periodic tidy: merge, split, promote, archive
-
-**Commands:**
-- `/briefcase "thought"` - Capture a thought
-- `/briefcase brief [topic]` - Get briefed on your thinking
-- `/briefcase tidy` - Reorganize suggestions
-
-**Config:** `briefcase` (root directory)
-
-[Full documentation](plugins/briefcase/skills/briefcase/SKILL.md)
-
-### expert-agents
-
-Domain-specific code auditors with unique personalities.
-
-**Commands:**
-- `/klaus` - Embedded systems auditor
-- `/librodotus` - Documentation quality auditor
-- `/shawn` - Educational mentor
-
-**Config:** None (stateless)
-
-[Full documentation](plugins/expert-agents/README.md)
 
 ## Shared Configuration
 
@@ -153,10 +118,8 @@ All plugins read from `.claude/vibe-hacker.json`:
 Each plugin reads only its relevant keys:
 - `greenfield-mode` reads: `greenfield_mode`, `greenfield_strict`, `greenfield_patterns`
 - `primer` reads: `priming`, `greenfield_mode` (for display)
-- `planning` reads: `planning`, `protected_paths`
-- `expert-agents` reads: `agents` (build_verifier, test_runner, etc.)
+- `librarian` reads: `planning`, `protected_paths`
 - `backlog` reads: `backlog` (root directory)
-- `briefcase` reads: `briefcase` (root directory)
 
 ## Repository Structure
 
@@ -165,10 +128,8 @@ vibe-hacker/
 ├── plugins/
 │   ├── greenfield-mode/      # Cruft prevention
 │   ├── primer/               # Context priming
-│   ├── planning/             # Planning documents
-│   ├── expert-agents/        # Code auditors
-│   ├── backlog/              # Project backlogs
-│   └── briefcase/            # Personal thought management
+│   ├── librarian/            # Planning documents
+│   └── backlog/              # Project backlogs
 ├── docs/
 │   └── planning/             # This project's planning docs
 ├── templates/
