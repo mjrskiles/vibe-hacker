@@ -15,9 +15,8 @@ This cruft creates confusion in greenfield projects where there is no "old way."
 
 ## What It Does
 
-1. **Status Display** (SessionStart): Shows greenfield mode status when session starts
+1. **Status Display** (SessionStart): Shows greenfield mode status and injects greenfield context into Claude
 2. **Cruft Detection** (PostToolUse): Warns/blocks when edited files contain legacy patterns
-3. **Session Reminder** (Stop): Reminds about greenfield rules at session end
 
 ## Installation
 
@@ -42,7 +41,8 @@ Create `.claude/vibe-hacker.json` in your project:
 |---------|------|---------|-------------|
 | `greenfield_mode` | boolean | `false` | Enable greenfield mode |
 | `greenfield_strict` | boolean | `false` | Block edits (instead of warn) when cruft detected |
-| `greenfield_patterns` | string[] | (built-in) | Custom patterns to detect |
+| `greenfield_patterns` | string[] | (built-in) | Custom patterns to detect (replaces defaults) |
+| `greenfield_exclude` | string[] | `*.json`, `*.yaml`, `*.yml` | File globs to skip (merged with defaults) |
 
 ### Strict Mode
 
@@ -75,19 +75,17 @@ Override the default cruft patterns:
 
 The following patterns are detected by default (case-insensitive):
 
-- `deprecated`, `@deprecated`
-- `legacy`, `obsolete`
-- `backwards.compat`, `backward.compat`
-- `for.compatibility`, `compat.shim`
-- `TODO.*remove`, `TODO.*migrate`
+- `deprecated`, `legacy`, `obsolete`
+- `backwards.compat`, `backward.compat`, `for compatibility`
+- `TODO:.*remove.*migrat`, `TODO:.*remove.*later`, `FIXME:.*compat`
+- `temporary.*shim`, `_unused`, `re-export`
 
 ## Hooks
 
 | Event | Behavior |
 |-------|----------|
-| SessionStart | Display greenfield mode status |
+| SessionStart | Display greenfield mode status, inject greenfield context |
 | PostToolUse (Edit/Write) | Check edited file for cruft patterns |
-| Stop | Remind about greenfield rules |
 
 ## Requirements
 

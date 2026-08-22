@@ -22,17 +22,6 @@
           }
         ]
       }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/stop-hook.sh",
-            "timeout": 5000
-          }
-        ]
-      }
     ]
   }
 }

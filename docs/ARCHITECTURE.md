@@ -69,8 +69,6 @@ Pre-Compact  ──► planning/precompact-roadmap.sh     Remind to update roadm
 Pre-ToolUse  ──► planning/check-protected-paths.sh  Enforce file access tiers
 
 Post-ToolUse ──► greenfield-mode/check-cruft.sh     Detect cruft in edited files
-
-Stop         ──► greenfield-mode/stop-hook.sh       Greenfield review
 ```
 
 ### Hook Output Patterns
