@@ -4,16 +4,17 @@ This document describes the architecture of the Vibe Hacker plugin collection fo
 
 ## Overview
 
-Vibe Hacker is a collection of six independent Claude Code plugins that share a single configuration file (`.claude/vibe-hacker.json`). Each plugin is self-contained with its own hooks, scripts, skills, and agents.
+Vibe Hacker is a collection of four independent Claude Code plugins that share a single configuration file (`.claude/vibe-hacker.json`). Each plugin is self-contained with its own hooks, scripts, skills, and agents.
 
 | Plugin | Purpose |
 |--------|---------|
 | **greenfield-mode** | Prevent backwards-compatibility cruft in prototype projects |
 | **primer** | Automatically load project context on session start |
-| **planning** | Manage ADRs, FDPs, Action Plans, Reports with lifecycle and protection |
-| **expert-agents** | Domain-specific auditors (Klaus, Librodotus, Shawn) + build/test/arch/size agents |
+| **librarian** | Manage ADRs, FDPs, Action Plans, Reports with lifecycle and protection |
 | **backlog** | Lightweight task tracking for ideas and polish items |
-| **briefcase** | Personal thought management with capture, briefing, and tidy |
+
+`expert-agents` and `briefcase` are not part of this collection — they live in the
+`sbl-cc-plugins` and `briefcase` repos respectively.
 
 ## Plugin Structure
 
@@ -38,7 +39,7 @@ Plugins are installed independently — you can pick just the ones you need:
 ```bash
 /plugin marketplace add /path/to/vibe-hacker
 /plugin install primer@vibe-hacker        # Just context priming
-/plugin install planning@vibe-hacker      # Just planning documents
+/plugin install librarian@vibe-hacker      # Just planning documents
 ```
 
 ## Shared Configuration
@@ -49,12 +50,15 @@ Each plugin reads only its relevant keys:
 
 | Plugin | Config Keys |
 |--------|-------------|
-| greenfield-mode | `greenfield_mode`, `greenfield_strict`, `greenfield_patterns` |
+| greenfield-mode | `greenfield_mode`, `greenfield_strict`, `greenfield_patterns`, `greenfield_exclude` |
 | primer | `priming` (files, globs, repos, instructions, focuses), `greenfield_mode` |
-| planning | `planning` (version, subdirs), `protected_paths` (rules) |
-| expert-agents | `agents` (setup, build_verifier, test_runner, arch_auditor, size_tracker) |
+| librarian | `planning` (version, subdirs), `protected_paths` (rules) |
 | backlog | `backlog` (root directory) |
-| briefcase | `briefcase` (root directory) |
+
+`greenfield_exclude` is a list of file globs the cruft checker skips, merged with the
+built-in defaults (`*.json`, `*.yaml`, `*.yml`). Plugin source trees are excluded
+automatically — the checker walks up for a `.claude-plugin/` marker — so this key is for
+project-specific exclusions like generated files or vendored code.
 
 ## Hook System
 
@@ -64,9 +68,9 @@ Plugins use Claude Code hooks to inject behavior at specific lifecycle points:
 Session Start ──► primer/prime.sh            Load project context
                   greenfield-mode/session-start.sh   Show greenfield status
 
-Pre-Compact  ──► planning/precompact-roadmap.sh     Remind to update roadmap
+Pre-Compact  ──► librarian/precompact-roadmap.sh     Remind to update roadmap
 
-Pre-ToolUse  ──► planning/check-protected-paths.sh  Enforce file access tiers
+Pre-ToolUse  ──► librarian/check-protected-paths.sh  Enforce file access tiers
 
 Post-ToolUse ──► greenfield-mode/check-cruft.sh     Detect cruft in edited files
 ```
@@ -101,7 +105,7 @@ SessionStart
 Claude uses Edit/Write tool
     │
     ▼
-PreToolUse ──► planning/check-protected-paths.sh
+PreToolUse ──► librarian/check-protected-paths.sh
     │
     ├── readonly:  Block (permissionDecision: deny)
     ├── guided:    Block + suggest skill
@@ -122,7 +126,6 @@ Skills are interactive capabilities invoked via slash commands:
 |-------|--------|------------|
 | Librarian | librarian | `/librarian new fdp "Title"`, `/librarian list` |
 | Backlog | backlog | `/backlog add davis "item"`, `/backlog review davis` |
-| Briefcase | briefcase | `/briefcase "thought"`, `/briefcase brief` |
 
 Skills use Python scripts for file operations and rely on Claude for analysis tasks (review, brief, tidy, chat).
 
@@ -132,14 +135,6 @@ Agents are specialized Claude instances spawned for specific tasks:
 
 | Agent | Plugin | Model | Purpose |
 |-------|--------|-------|---------|
-| Klaus | expert-agents | Sonnet | Embedded quality audit |
-| Librodotus | expert-agents | Sonnet | Documentation audit |
-| Shawn | expert-agents | Sonnet | Educational review |
-| Brainstorm | expert-agents | Opus | Interactive idea distillery |
-| Build Verifier | expert-agents | Haiku | Build all targets |
-| Test Runner | expert-agents | Sonnet | Run tests, diagnose failures |
-| Arch Auditor | expert-agents | Sonnet | Layer boundary verification |
-| Size Tracker | expert-agents | Haiku | Binary size comparison |
 | Cruft Auditor | greenfield-mode | Sonnet | Greenfield cruft scan |
 
 ## Environment Variables

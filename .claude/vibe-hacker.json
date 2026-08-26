@@ -49,7 +49,7 @@
         "message": "This is a template file. Ensure placeholders like ${VARIABLE} are preserved."
       },
       {
-        "pattern": "skills/planning/templates/**",
+        "pattern": "plugins/librarian/skills/librarian/templates/**",
         "tier": "remind",
         "message": "This is a planning template. Ensure placeholders like ${NUMBER}, ${TITLE}, ${DATE} are preserved."
       }

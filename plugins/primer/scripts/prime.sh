@@ -322,7 +322,9 @@ if [[ -n "$INSTRUCTIONS" ]]; then
 fi
 
 for file in "${UNIQUE[@]}"; do
-    content=$(cat "$file" | jq -Rs '.')
+    # Raw content. The whole assembled context is JSON-encoded once at the end;
+    # encoding here too would deliver escaped \n and quote-wrapped text.
+    content=$(cat "$file")
     CONTEXT_PARTS+=("FILE: $file
 ${content}")
 done

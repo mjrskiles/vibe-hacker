@@ -31,10 +31,10 @@ A collection of Claude Code plugins for hacking, development workflows, and gree
 Prevents backwards-compatibility cruft in prototype projects.
 
 **Hooks:**
+- SessionStart: Show greenfield status
 - PostToolUse: Detect legacy patterns in edited files
-- Stop: Greenfield reminder
 
-**Config:** `greenfield_mode`, `greenfield_strict`, `greenfield_patterns`
+**Config:** `greenfield_mode`, `greenfield_strict`, `greenfield_patterns`, `greenfield_exclude`
 
 [Full documentation](plugins/greenfield-mode/README.md)
 
@@ -116,7 +116,7 @@ All plugins read from `.claude/vibe-hacker.json`:
 ```
 
 Each plugin reads only its relevant keys:
-- `greenfield-mode` reads: `greenfield_mode`, `greenfield_strict`, `greenfield_patterns`
+- `greenfield-mode` reads: `greenfield_mode`, `greenfield_strict`, `greenfield_patterns`, `greenfield_exclude`
 - `primer` reads: `priming`, `greenfield_mode` (for display)
 - `librarian` reads: `planning`, `protected_paths`
 - `backlog` reads: `backlog` (root directory)

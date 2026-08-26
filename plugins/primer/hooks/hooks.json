@@ -6,7 +6,7 @@
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/scripts/prime.sh",
-            "timeout": 10000
+            "timeout": 30
           }
         ]
       }

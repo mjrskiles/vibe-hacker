@@ -63,12 +63,21 @@ matches_pattern() {
     # Enable extended globbing
     shopt -s extglob nullglob
 
-    # Convert glob pattern to regex for matching
-    # Handle ** (any path), * (any segment), ? (any char)
+    # Convert glob pattern to regex for matching.
+    # Handle ** (any depth), * (one segment), ? (any char).
+    #
+    # Order matters. ** must be parked on a sentinel before * is expanded,
+    # or the * pass chews the .* that ** just produced:
+    #   docs/planning/*/archive/**
+    #     -> docs/planning/*/archive/.*        (** substituted)
+    #     -> docs/planning/[^/]*/archive/.[^/]*   (* ate the dot-star)
+    # which silently stops matching anything nested under archive/.
     local regex_pattern="$pattern"
-    regex_pattern="${regex_pattern//\*\*/.*}"      # ** -> .*
-    regex_pattern="${regex_pattern//\*/[^/]*}"     # * -> [^/]*
-    regex_pattern="${regex_pattern//\?/.}"          # ? -> .
+    regex_pattern="${regex_pattern//./\\.}"           # literal dots
+    regex_pattern="${regex_pattern//\*\*/$'\x01'}"    # ** -> sentinel
+    regex_pattern="${regex_pattern//\*/[^/]*}"        # *  -> one segment
+    regex_pattern="${regex_pattern//$'\x01'/.*}"      # sentinel -> any depth
+    regex_pattern="${regex_pattern//\?/.}"            # ?  -> any char
     regex_pattern="^${regex_pattern}$"
 
     if [[ "$rel_path" =~ $regex_pattern ]]; then

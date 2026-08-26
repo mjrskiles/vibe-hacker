@@ -69,21 +69,32 @@ load_excludes() {
     EXCLUDE_PATTERNS=("${DEFAULT_EXCLUDES[@]}")
 }
 
+# True if the path sits anywhere inside a plugin's own source tree.
+#
+# Plugin sources describe cruft patterns, so they trip every check. Matching on
+# CLAUDE_PLUGIN_ROOT cannot catch this: that variable names the *installed*
+# copy under ~/.claude/plugins, never the working tree the source is actually
+# edited in. Walking up for the plugin marker works wherever it is checked out.
+in_plugin_source_tree() {
+    local dir
+    dir=$(cd "$(dirname "$1")" 2>/dev/null && pwd) || return 1
+
+    while [[ -n "$dir" && "$dir" != "/" ]]; do
+        if [[ -f "$dir/.claude-plugin/plugin.json" || -f "$dir/.claude-plugin/marketplace.json" ]]; then
+            return 0
+        fi
+        dir=$(dirname "$dir")
+    done
+    return 1
+}
+
 # Check if file matches any exclude pattern
 is_excluded() {
     local file="$1"
     local basename
     basename=$(basename "$file")
 
-    # Auto-exclude plugin's own directory (meta-documentation)
-    if [[ -n "${CLAUDE_PLUGIN_ROOT:-}" ]]; then
-        local normalized_root normalized_file
-        normalized_root=$(cd "$CLAUDE_PLUGIN_ROOT" 2>/dev/null && pwd)
-        normalized_file=$(cd "$(dirname "$file")" 2>/dev/null && pwd)/$(basename "$file")
-        if [[ -n "$normalized_root" && "$normalized_file" == "$normalized_root"* ]]; then
-            return 0
-        fi
-    fi
+    in_plugin_source_tree "$file" && return 0
 
     shopt -s extglob nullglob
     for pattern in "${EXCLUDE_PATTERNS[@]}"; do
@@ -91,12 +102,15 @@ is_excluded() {
         if [[ "$file" == $pattern ]] || [[ "$basename" == $pattern ]]; then
             return 0
         fi
-        # Handle ** glob patterns
+        # Handle ** glob patterns. Order matters -- ** is parked on a sentinel
+        # before * expands, or the * pass chews the .* that ** just produced.
         if [[ "$pattern" == *"**"* ]]; then
-            # Convert ** to regex-like matching
-            local regex_pattern="${pattern//\*\*/.*}"
+            local regex_pattern="$pattern"
+            regex_pattern="${regex_pattern//./\\.}"
+            regex_pattern="${regex_pattern//\*\*/$'\x01'}"
             regex_pattern="${regex_pattern//\*/[^/]*}"
-            if [[ "$file" =~ $regex_pattern ]]; then
+            regex_pattern="${regex_pattern//$'\x01'/.*}"
+            if [[ "$file" =~ ^${regex_pattern}$ ]]; then
                 return 0
             fi
         fi
