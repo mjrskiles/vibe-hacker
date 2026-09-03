@@ -6,18 +6,8 @@ allowed-tools: Read, Grep, Glob, Bash
 
 # Datasheet Skill
 
-Answer hardware questions from the documents, not from memory. Every fact
-you report carries a document, section, and page. If the corpus can't
+Answer hardware questions from the documents. Cite facts with a document, section, and page. If the corpus can't
 answer, say so and name the document that would.
-
-## Why this exists
-
-The failure mode this skill prevents is specific and recurring: a plausible
-number stated with confidence and no source. A FIFO depth remembered as "8 or
-16", a reset value that is "presumably" the boot address, a silicon erratum
-nobody checked — each costs a debugging afternoon when the code is built on
-it. Reference manuals run to thousands of pages and don't fit in a web fetch,
-so the temptation is to reason from memory. Don't. Open the PDF.
 
 ## The corpus
 
@@ -26,26 +16,11 @@ so the temptation is to reason from memory. Don't. Open the PDF.
 - **Index:** `<root>/index.json` (tracked in git). Maps each document to its
   part numbers, type, revision, page count, text-layer quality, and a table of
   contents (section → page). Start here.
-- **PDFs:** `<root>/*.pdf`. Usually gitignored (vendor copyright, size) — so
-  the index may list documents that are not on this machine. Entries under
+- **PDFs:** `<root>/*.pdf`. The index may list documents that are not on this machine. Entries under
   `wanted` are known-missing; say so rather than substituting.
 - **Tools:** poppler (`pdfinfo`, `pdftotext`, `pdftoppm`). If it isn't
   installed, the `Read` tool still reads PDFs by page range; you lose keyword
   search across a document.
-
-### Document types — and which one answers what
-
-| Question | Document type | Not this |
-|---|---|---|
-| Register bits, peripheral behaviour, clock trees, boot sequence | **Reference manual** | datasheet |
-| Pinout, alternate functions, electrical limits, timing, package | **Datasheet** | reference manual |
-| Silicon bugs and workarounds, per revision | **Errata sheet** | either of the above |
-| Core-level features (NVIC, MPU, FPU, SysTick on Arm parts) | **Programming manual** / core TRM | MCU reference manual |
-| Vendor recommendations, worked examples | **Application note** | treat as advice, not spec |
-| Board wiring, connector pinout, jack conditioning | **Board datasheet / schematic** | chip documents |
-
-Say which type you are citing. A datasheet "typical" value and a reference
-manual "reset value" are different kinds of fact.
 
 ## Procedure
 
