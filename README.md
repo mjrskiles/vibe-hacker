@@ -96,11 +96,12 @@ filled from memory; the errata sheet is always checked.
 manual vs datasheet vs errata), compare-against-code reports.
 
 **Agent:** `datasheet-reader` — deep reads across sections or documents,
-driver/schematic audits, table-of-contents generation for new PDFs.
+driver/schematic audits, cataloguing new PDFs.
 
-**Corpus:** `<root>/index.json` (tracked) catalogues the documents;
-`<root>/*.pdf` stay local. Uses poppler (`pdftotext`, `pdftoppm`) when
-installed.
+**Corpus:** a [shelf](https://github.com/mjrskiles/shelf) — `<root>/shelf.json`
+(tracked) catalogues the documents, `shelf search` / `grep` / `read` / `toc`
+work the full-text index, and the PDFs stay local. Requires the `shelf` CLI
+and poppler.
 
 **Config:** `datasheet` (`root`, default `docs/manuals`)
 

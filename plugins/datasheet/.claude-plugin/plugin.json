@@ -1,7 +1,7 @@
 {
   "name": "datasheet",
   "version": "0.1.0",
-  "description": "Consult a local corpus of datasheets, reference manuals, and errata sheets with page-level citations — lookup skill for in-context questions, reader agent for deep reads and index building",
+  "description": "Consult a local shelf of datasheets, reference manuals, and errata sheets with page-level citations — lookup skill for in-context questions, reader agent for deep reads and cataloguing",
   "author": {
     "name": "Michael Skiles",
     "email": "michael@soundbytelabs.net"
