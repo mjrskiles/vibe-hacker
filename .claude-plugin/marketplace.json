@@ -29,6 +29,12 @@
       "version": "0.1.0",
       "description": "Lightweight project backlogs for ideas, polish items, and small improvements",
       "source": "./plugins/backlog"
+    },
+    {
+      "name": "datasheet",
+      "version": "0.1.0",
+      "description": "Page-cited lookups against a local corpus of datasheets, reference manuals, and errata — skill + deep-read agent",
+      "source": "./plugins/datasheet"
     }
   ]
 }

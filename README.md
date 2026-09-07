@@ -10,6 +10,7 @@ A collection of Claude Code plugins for hacking, development workflows, and gree
 | [primer](plugins/primer/) | Context priming on session start | Any project |
 | [librarian](plugins/librarian/) | ADRs, FDPs, Action Plans, Reports, Roadmap | Structured planning |
 | [backlog](plugins/backlog/) | Lightweight project backlogs for ideas and polish items | Task tracking |
+| [datasheet](plugins/datasheet/) | Page-cited lookups against local datasheets, reference manuals, errata | Embedded / hardware |
 
 ## Quick Start
 
@@ -83,6 +84,28 @@ Lightweight task tracking for ideas, polish items, and small improvements.
 
 [Full documentation](plugins/backlog/skills/backlog/SKILL.md)
 
+### datasheet
+
+Page-cited answers from a local corpus of datasheets, reference manuals,
+errata sheets, and schematics. Stops the "plausible number, no source"
+failure mode in embedded work: every fact carries document, revision,
+section, and printed page; gaps are reported as "not stated" instead of
+filled from memory; the errata sheet is always checked.
+
+**Skill:** `datasheet` — in-context lookups, document-type routing (reference
+manual vs datasheet vs errata), compare-against-code reports.
+
+**Agent:** `datasheet-reader` — deep reads across sections or documents,
+driver/schematic audits, table-of-contents generation for new PDFs.
+
+**Corpus:** `<root>/index.json` (tracked) catalogues the documents;
+`<root>/*.pdf` stay local. Uses poppler (`pdftotext`, `pdftoppm`) when
+installed.
+
+**Config:** `datasheet` (`root`, default `docs/manuals`)
+
+[Full documentation](plugins/datasheet/skills/datasheet/SKILL.md)
+
 ## Shared Configuration
 
 All plugins read from `.claude/vibe-hacker.json`:
@@ -120,6 +143,7 @@ Each plugin reads only its relevant keys:
 - `primer` reads: `priming`, `greenfield_mode` (for display)
 - `librarian` reads: `planning`, `protected_paths`
 - `backlog` reads: `backlog` (root directory)
+- `datasheet` reads: `datasheet` (`root` — corpus directory, default `docs/manuals`)
 
 ## Repository Structure
 
@@ -129,7 +153,8 @@ vibe-hacker/
 │   ├── greenfield-mode/      # Cruft prevention
 │   ├── primer/               # Context priming
 │   ├── librarian/            # Planning documents
-│   └── backlog/              # Project backlogs
+│   ├── backlog/              # Project backlogs
+│   └── datasheet/            # Datasheet / manual corpus lookups
 ├── docs/
 │   └── planning/             # This project's planning docs
 ├── templates/
