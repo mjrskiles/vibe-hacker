@@ -96,13 +96,14 @@ filled from memory; the errata sheet is always checked.
 manual vs datasheet vs errata), compare-against-code reports.
 
 **Agent:** `datasheet-reader` — deep reads across sections or documents,
-driver/schematic audits, table-of-contents generation for new PDFs.
+driver/schematic audits, cataloguing new PDFs.
 
-**Corpus:** `<root>/index.json` (tracked) catalogues the documents;
-`<root>/*.pdf` stay local. Uses poppler (`pdftotext`, `pdftoppm`) when
-installed.
+**Corpus:** a [shelf](https://github.com/mjrskiles/shelf) — `<root>/shelf.json`
+(tracked) catalogues the documents, `shelf search` / `grep` / `read` / `toc`
+work the full-text index, and the PDFs stay local. Requires the `shelf` CLI
+and poppler.
 
-**Config:** `datasheet` (`root`, default `docs/manuals`)
+**Config:** `datasheet` (`root`, default `docs/reference`)
 
 [Full documentation](plugins/datasheet/skills/datasheet/SKILL.md)
 
@@ -143,7 +144,7 @@ Each plugin reads only its relevant keys:
 - `primer` reads: `priming`, `greenfield_mode` (for display)
 - `librarian` reads: `planning`, `protected_paths`
 - `backlog` reads: `backlog` (root directory)
-- `datasheet` reads: `datasheet` (`root` — corpus directory, default `docs/manuals`)
+- `datasheet` reads: `datasheet` (`root` — corpus directory, default `docs/reference`)
 
 ## Repository Structure
 
