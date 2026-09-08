@@ -103,7 +103,7 @@ driver/schematic audits, cataloguing new PDFs.
 work the full-text index, and the PDFs stay local. Requires the `shelf` CLI
 and poppler.
 
-**Config:** `datasheet` (`root`, default `docs/manuals`)
+**Config:** `datasheet` (`root`, default `docs/reference`)
 
 [Full documentation](plugins/datasheet/skills/datasheet/SKILL.md)
 
@@ -144,7 +144,7 @@ Each plugin reads only its relevant keys:
 - `primer` reads: `priming`, `greenfield_mode` (for display)
 - `librarian` reads: `planning`, `protected_paths`
 - `backlog` reads: `backlog` (root directory)
-- `datasheet` reads: `datasheet` (`root` — corpus directory, default `docs/manuals`)
+- `datasheet` reads: `datasheet` (`root` — corpus directory, default `docs/reference`)
 
 ## Repository Structure
 

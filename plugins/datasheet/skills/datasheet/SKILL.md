@@ -14,7 +14,7 @@ answer, say so and name the document that would.
 The corpus is a [shelf](https://github.com/mjrskiles/shelf): a directory holding `shelf.json`
 (the catalog, git-tracked), the PDFs (usually gitignored), and a derived full-text index.
 
-- **Root:** `datasheet.root` in `.claude/vibe-hacker.json`, default `docs/manuals/`.
+- **Root:** `datasheet.root` in `.claude/vibe-hacker.json`, default `docs/reference/`.
   `shelf` finds `shelf.json` by searching upward from the working directory; from elsewhere
   pass `--root <root>`.
 - **Catalog:** `shelf list` — every document by id, type, parts, revision, page count, and

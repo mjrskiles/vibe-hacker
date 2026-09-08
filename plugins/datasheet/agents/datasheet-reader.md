@@ -17,7 +17,7 @@ say so and name the document that would.
 The corpus is a `shelf`: `shelf.json` catalog + PDFs + full-text index.
 
 - Root: `datasheet.root` in `.claude/vibe-hacker.json`, default
-  `docs/manuals/`. Walk up from the working directory to find the config, then
+  `docs/reference/`. Walk up from the working directory to find the config, then
   run `shelf` from the root or with `--root <root>`.
 - `shelf list` — what exists, on disk or not. `wanted` entries are not on this
   machine; say so, don't substitute.
