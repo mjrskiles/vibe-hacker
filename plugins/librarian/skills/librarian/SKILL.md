@@ -94,7 +94,6 @@ Configure planning in `.claude/vibe-hacker.json`:
 ```json
 {
   "planning": {
-    "version": "0.2.1",
     "subdirs": {
       "adr": "decisions",
       "fdp": "designs",
@@ -110,7 +109,6 @@ Configure planning in `.claude/vibe-hacker.json`:
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| `planning.version` | `0.1.0` | Schema version |
 | `planning.subdirs.adr` | `decisions` | Subdirectory for ADRs |
 | `planning.subdirs.fdp` | `designs` | Subdirectory for FDPs |
 | `planning.subdirs.ap` | `action-plans` | Subdirectory for Action Plans |
@@ -287,17 +285,6 @@ python3 scripts/list.py --type adr
 python3 scripts/list.py --type report
 python3 scripts/list.py --status proposed
 python3 scripts/list.py --include-archived
-```
-
-### Migration (vibe-doc)
-
-Upgrade existing documents to the latest format:
-
-```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/vibe-doc.py status
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/vibe-doc.py upgrade --dry-run
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/vibe-doc.py upgrade
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/vibe-doc.py changelog 0.2.0
 ```
 
 ## Document Lifecycle

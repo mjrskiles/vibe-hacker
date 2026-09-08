@@ -4,7 +4,7 @@ This document describes the architecture of the Vibe Hacker plugin collection fo
 
 ## Overview
 
-Vibe Hacker is a collection of four independent Claude Code plugins that share a single configuration file (`.claude/vibe-hacker.json`). Each plugin is self-contained with its own hooks, scripts, skills, and agents.
+Vibe Hacker is a collection of five independent Claude Code plugins that share a single configuration file (`.claude/vibe-hacker.json`). Each plugin is self-contained with its own hooks, scripts, skills, and agents.
 
 | Plugin | Purpose |
 |--------|---------|
@@ -12,6 +12,7 @@ Vibe Hacker is a collection of four independent Claude Code plugins that share a
 | **primer** | Automatically load project context on session start |
 | **librarian** | Manage ADRs, FDPs, Action Plans, Reports with lifecycle and protection |
 | **backlog** | Lightweight task tracking for ideas and polish items |
+| **datasheet** | Page-cited lookups against a local shelf of datasheets, reference manuals, errata |
 
 `expert-agents` and `briefcase` are not part of this collection — they live in the
 `sbl-cc-plugins` and `briefcase` repos respectively.
@@ -30,7 +31,7 @@ plugins/<name>/
 ├── commands/                # Slash command definitions (optional)
 ├── agents/                  # Agent definitions (optional)
 ├── skills/                  # Skill definitions (optional)
-├── templates/               # Config examples (optional)
+├── templates/               # Config example for this plugin (optional)
 └── README.md
 ```
 
@@ -54,6 +55,7 @@ Each plugin reads only its relevant keys:
 | primer | `priming` (files, globs, repos, instructions, focuses), `greenfield_mode` |
 | librarian | `planning` (version, subdirs), `protected_paths` (rules) |
 | backlog | `backlog` (root directory) |
+| datasheet | `datasheet` (`root` — shelf directory, default `docs/reference`) |
 
 `greenfield_exclude` is a list of file globs the cruft checker skips, merged with the
 built-in defaults (`*.json`, `*.yaml`, `*.yml`). Plugin source trees are excluded
@@ -68,7 +70,7 @@ Plugins use Claude Code hooks to inject behavior at specific lifecycle points:
 Session Start ──► primer/prime.sh            Load project context
                   greenfield-mode/session-start.sh   Show greenfield status
 
-Pre-Compact  ──► librarian/precompact-roadmap.sh     Remind to update roadmap
+Pre-Compact  ──► librarian/precompact-roadmap.sh     Remind to update roadmap (only if touched in last 30 days)
 
 Pre-ToolUse  ──► librarian/check-protected-paths.sh  Enforce file access tiers
 
@@ -126,6 +128,7 @@ Skills are interactive capabilities invoked via slash commands:
 |-------|--------|------------|
 | Librarian | librarian | `/librarian new fdp "Title"`, `/librarian list` |
 | Backlog | backlog | `/backlog add davis "item"`, `/backlog review davis` |
+| Datasheet | datasheet | `/datasheet` — cited lookups via the `shelf` CLI |
 
 Skills use Python scripts for file operations and rely on Claude for analysis tasks (review, brief, tidy, chat).
 
@@ -136,6 +139,7 @@ Agents are specialized Claude instances spawned for specific tasks:
 | Agent | Plugin | Model | Purpose |
 |-------|--------|-------|---------|
 | Cruft Auditor | greenfield-mode | Sonnet | Greenfield cruft scan |
+| Datasheet Reader | datasheet | Opus | Multi-document reads, driver/schematic audits, cataloguing |
 
 ## Environment Variables
 

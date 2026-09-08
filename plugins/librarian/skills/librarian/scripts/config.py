@@ -10,9 +10,6 @@ import subprocess
 from pathlib import Path
 from typing import Optional
 
-# Current schema version
-CURRENT_VERSION = '0.2.0'
-
 # Default planning root if not configured
 DEFAULT_PLANNING_ROOT = 'docs/planning'
 
@@ -138,12 +135,6 @@ def save_config(config: dict) -> None:
     config_path = get_config_path()
     config_path.parent.mkdir(parents=True, exist_ok=True)
     config_path.write_text(json.dumps(config, indent=2) + '\n')
-
-
-def get_planning_version() -> str:
-    """Get the planning schema version from config."""
-    config = load_config()
-    return config.get('planning', {}).get('version', '0.1.0')
 
 
 def get_planning_root() -> str:
@@ -327,7 +318,7 @@ def get_template_path(doc_type: str) -> Optional[Path]:
         return None
 
     plugin_root = Path(os.environ.get('CLAUDE_PLUGIN_ROOT', '.'))
-    template_path = plugin_root / 'skills' / 'planning' / 'templates' / template_name
+    template_path = plugin_root / 'skills' / 'librarian' / 'templates' / template_name
 
     if template_path.exists():
         return template_path

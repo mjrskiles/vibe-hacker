@@ -1,11 +1,11 @@
 # Roadmap
 
-> Last updated: 2026-08-26
+> Last updated: 2026-09-08
 
 ## Current State
 
-Vibe Hacker is a working collection of 4 Claude Code plugins — greenfield-mode, primer,
-librarian, backlog — used daily in active development. All are functional and stable.
+Vibe Hacker is a working collection of 5 Claude Code plugins — greenfield-mode, primer,
+librarian, backlog, datasheet — used daily in active development. All are functional and stable.
 
 `expert-agents` and `briefcase` were split out into the `sbl-cc-plugins` and `briefcase`
 repos; the `planning` plugin was renamed `librarian`.
@@ -24,6 +24,10 @@ repos; the `planning` plugin was renamed `librarian`.
 
 ## Recently Completed
 
+- [x] Cruft pass — librarian migration system (`vibe-doc`, `migrations/`) deleted, root
+      `templates/` deleted, stale `planning`/`expert-agents`/`briefcase` references removed,
+      PreCompact roadmap reminder gated on recent activity
+- [x] Datasheet plugin — skill + reader agent driven by the `shelf` CLI
 - [x] Hook and doc defect sweep — prime.sh double-encoding, `**` glob expansion in both
       pattern matchers, cruft-checker self-exclusion, hook timeout units, stale docs
 - [x] Backlog plugin — lightweight project backlogs

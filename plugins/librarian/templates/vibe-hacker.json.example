@@ -17,8 +17,8 @@
       {
         "pattern": "docs/planning/**/*.md",
         "tier": "guided",
-        "skill": "planning",
-        "message": "Use the planning skill to manage these documents."
+        "skill": "librarian",
+        "message": "Use the librarian skill to manage these documents."
       }
     ]
   }

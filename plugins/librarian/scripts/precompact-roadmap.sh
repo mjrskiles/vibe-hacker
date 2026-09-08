@@ -1,9 +1,17 @@
 #!/usr/bin/env bash
 #
-# PreCompact hook: Remind to update roadmap before context compaction
+# PreCompact hook: remind to update the roadmap before context compaction.
+#
+# Fires only for a roadmap that is actually being maintained: its own
+# "> Last updated: YYYY-MM-DD" line (the librarian template convention) is within
+# ACTIVE_DAYS. Without that line, fall back to git history, then mtime. A roadmap
+# nobody has touched in months is a fossil, and nagging about it every compaction
+# is noise — and a bulk reformat commit doesn't count as maintenance.
 #
 
 set -euo pipefail
+
+ACTIVE_DAYS=30
 
 # Config resolution: prefer CLAUDE_PROJECT_DIR, fall back to git root
 find_config() {
@@ -34,21 +42,43 @@ fi
 
 ROADMAP_FILE="$PROJECT_DIR/$PLANNING_ROOT/roadmap.md"
 
-# Only remind if roadmap exists
-if [[ -f "$ROADMAP_FILE" ]]; then
-    # Display to user terminal (stderr)
-    echo "ROADMAP UPDATE REMINDER - Review before compaction" >&2
+[[ -f "$ROADMAP_FILE" ]] || exit 0
 
-    # Inject reminder via systemMessage (PreCompact has no hookSpecificOutput support)
-    context="ROADMAP UPDATE REMINDER: Before context compaction, please review and update the project roadmap at $PLANNING_ROOT/roadmap.md:\n\n1. Move completed items to 'Recently Completed' section\n2. Update 'Immediate' goals based on current progress\n3. Adjust priorities in 'Medium Term' and 'Long Term' as needed\n4. Update the 'Last updated' date"
+# Epoch seconds of the roadmap's last maintenance.
+last_changed() {
+    local stamped
+    stamped=$(grep -m1 -oE '^> Last updated: *[0-9]{4}-[0-9]{2}-[0-9]{2}' "$ROADMAP_FILE" | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' || true)
+    if [[ -n "$stamped" ]] && date -d "$stamped" +%s &>/dev/null; then
+        date -d "$stamped" +%s
+        return
+    fi
+    # No stamp: uncommitted edits count as now, else last commit, else mtime.
+    if git -C "$(dirname "$ROADMAP_FILE")" rev-parse --is-inside-work-tree &>/dev/null; then
+        if [[ -n "$(git -C "$(dirname "$ROADMAP_FILE")" status --porcelain -- "$(basename "$ROADMAP_FILE")" 2>/dev/null)" ]]; then
+            date +%s
+            return
+        fi
+        local committed
+        committed=$(git -C "$(dirname "$ROADMAP_FILE")" log -1 --format=%ct -- "$(basename "$ROADMAP_FILE")" 2>/dev/null || true)
+        if [[ -n "$committed" ]]; then
+            echo "$committed"
+            return
+        fi
+    fi
+    stat -c %Y "$ROADMAP_FILE" 2>/dev/null || stat -f %m "$ROADMAP_FILE"
+}
 
-    context=$(echo -e "$context" | jq -Rs '.')
+age_days=$(( ( $(date +%s) - $(last_changed) ) / 86400 ))
+[[ "$age_days" -le "$ACTIVE_DAYS" ]] || exit 0
 
-    cat <<EOF
+echo "ROADMAP UPDATE REMINDER - Review before compaction" >&2
+
+# Inject reminder via systemMessage (PreCompact has no hookSpecificOutput support)
+context="ROADMAP UPDATE REMINDER: Before context compaction, please review and update the project roadmap at $PLANNING_ROOT/roadmap.md:\n\n1. Move completed items to 'Recently Completed' section\n2. Update 'Immediate' goals based on current progress\n3. Adjust priorities in 'Medium Term' and 'Long Term' as needed\n4. Update the 'Last updated' date"
+context=$(echo -e "$context" | jq -Rs '.')
+
+cat <<JSON
 {
   "systemMessage": ${context}
 }
-EOF
-fi
-
-exit 0
+JSON

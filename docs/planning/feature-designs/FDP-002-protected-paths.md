@@ -1,9 +1,9 @@
 ---
 type: fdp
 id: FDP-002
-status: proposed
+status: implemented
 created: 2025-12-13
-modified: 2025-12-13
+modified: '2026-09-08'
 supersedes: null
 superseded_by: null
 obsoleted_by: null
@@ -14,7 +14,7 @@ related: []
 
 ## Status
 
-Proposed
+Implemented
 
 ## Summary
 
