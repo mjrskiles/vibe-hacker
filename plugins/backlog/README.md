@@ -58,10 +58,9 @@ This plugin is part of the [vibe-hacker](https://github.com/mjrskiles/vibe-hacke
 
 - **greenfield-mode** - Cruft prevention for prototypes
 - **primer** - Context priming
-- **planning** - ADRs, FDPs, Action Plans, Reports, Roadmap
-- **expert-agents** - Code auditors, build/test/arch/size agents
+- **librarian** - ADRs, FDPs, Action Plans, Reports, Roadmap
 - **backlog** (this plugin) - Lightweight project backlogs
-- **briefcase** - Personal thought management
+- **datasheet** - Page-cited lookups against local datasheets and manuals
 
 ## License
 

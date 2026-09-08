@@ -69,13 +69,6 @@ python3 scripts/supersede.py ADR-001 "Revised Database Strategy"
 python3 scripts/relate.py ADR-001 FDP-003 --bidirectional
 ```
 
-**Migrate existing documents**:
-```bash
-python3 scripts/vibe-doc.py status
-python3 scripts/vibe-doc.py upgrade --dry-run
-python3 scripts/vibe-doc.py upgrade
-```
-
 ### Protected Paths
 
 Control access to files with three protection tiers:
@@ -88,7 +81,9 @@ Control access to files with three protection tiers:
 
 ### Roadmap Reminder
 
-PreCompact hook reminds you to update the roadmap before context compaction.
+PreCompact hook reminds you to update the roadmap before context compaction — only when
+the roadmap has been touched in the last 30 days (git history, falling back to mtime).
+A roadmap nobody maintains stops nagging on its own.
 
 ## Installation
 
@@ -104,7 +99,6 @@ Create `.claude/vibe-hacker.json` in your project:
 ```json
 {
   "planning": {
-    "version": "0.2.1",
     "subdirs": {
       "adr": "decisions",
       "fdp": "designs",
@@ -135,7 +129,6 @@ Create `.claude/vibe-hacker.json` in your project:
 
 | Setting | Type | Default | Description |
 |---------|------|---------|-------------|
-| `planning.version` | string | `"0.1.0"` | Schema version |
 | `planning.subdirs.adr` | string | `"decisions"` | Subdirectory for ADRs |
 | `planning.subdirs.fdp` | string | `"designs"` | Subdirectory for FDPs |
 | `planning.subdirs.ap` | string | `"action-plans"` | Subdirectory for Action Plans |
@@ -195,9 +188,8 @@ This plugin is part of the [vibe-hacker](https://github.com/mjrskiles/vibe-hacke
 - **greenfield-mode** - Cruft prevention for prototypes
 - **primer** - Context priming
 - **librarian** (this plugin) - ADRs, FDPs, Action Plans, Reports, Roadmap
-- **expert-agents** - Code auditors, build/test/arch/size agents
 - **backlog** - Lightweight project backlogs
-- **briefcase** - Personal thought management
+- **datasheet** - Page-cited lookups against local datasheets and manuals
 
 ## License
 

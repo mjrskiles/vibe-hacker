@@ -122,7 +122,6 @@ All plugins read from `.claude/vibe-hacker.json`:
     "instructions": "Focus on active work."
   },
   "planning": {
-    "version": "0.2.1",
     "subdirs": {
       "adr": "decisions",
       "fdp": "designs",
@@ -158,14 +157,14 @@ vibe-hacker/
 │   └── datasheet/            # Datasheet / manual corpus lookups
 ├── docs/
 │   └── planning/             # This project's planning docs
-├── templates/
 └── README.md
 ```
 
 ## Requirements
 
-- [jq](https://jqlang.github.io/jq/) - JSON processor (greenfield-mode, primer, planning)
-- Python 3.x - Planning scripts (planning only)
+- [jq](https://jqlang.github.io/jq/) - JSON processor (greenfield-mode, primer, librarian)
+- Python 3.x - librarian and backlog scripts
+- [shelf](https://github.com/mjrskiles/shelf) + poppler - datasheet plugin
 
 ## License
 
