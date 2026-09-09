@@ -10,7 +10,7 @@ A collection of Claude Code plugins for hacking, development workflows, and gree
 | [primer](plugins/primer/) | Context priming on session start | Any project |
 | [librarian](plugins/librarian/) | ADRs, FDPs, Action Plans, Reports, Roadmap | Structured planning |
 | [backlog](plugins/backlog/) | Lightweight project backlogs for ideas and polish items | Task tracking |
-| [datasheet](plugins/datasheet/) | Page-cited lookups against local datasheets, reference manuals, errata | Embedded / hardware |
+| [datasheet](plugins/datasheet/) | Page-cited lookups against local datasheets, reference manuals, errata — and curation of the catalog | Embedded / hardware |
 
 ## Quick Start
 
@@ -95,8 +95,17 @@ filled from memory; the errata sheet is always checked.
 **Skill:** `datasheet` — in-context lookups, document-type routing (reference
 manual vs datasheet vs errata), compare-against-code reports.
 
+**Skill:** `curate-corpus` — the maintenance side: closes missing revisions,
+titles, bylines, page offsets, and source URLs by pairing the `shelf` CLI
+(which does the enumerating and every write) with a fan-out of curator agents
+(which do the reading and propose values). Agents never write, so a bad read is
+a rejected proposal rather than a corrupted record.
+
 **Agent:** `datasheet-reader` — deep reads across sections or documents,
 driver/schematic audits, cataloguing new PDFs.
+
+**Agent:** `corpus-curator` — settles the catalog fields for one document from
+its own pages, and returns each value with the page it was read from.
 
 **Corpus:** a [shelf](https://github.com/mjrskiles/shelf) — `<root>/shelf.json`
 (tracked) catalogues the documents, `shelf search` / `grep` / `read` / `toc`
@@ -154,7 +163,7 @@ vibe-hacker/
 │   ├── primer/               # Context priming
 │   ├── librarian/            # Planning documents
 │   ├── backlog/              # Project backlogs
-│   └── datasheet/            # Datasheet / manual corpus lookups
+│   └── datasheet/            # Corpus lookups and curation
 ├── docs/
 │   └── planning/             # This project's planning docs
 └── README.md
