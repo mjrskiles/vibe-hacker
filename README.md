@@ -95,11 +95,12 @@ filled from memory; the errata sheet is always checked.
 **Skill:** `datasheet` — in-context lookups, document-type routing (reference
 manual vs datasheet vs errata), compare-against-code reports.
 
-**Skill:** `curate-corpus` — the maintenance side: closes missing revisions,
-titles, bylines, page offsets, and source URLs by pairing the `shelf` CLI
-(which does the enumerating and every write) with a fan-out of curator agents
-(which do the reading and propose values). Agents never write, so a bad read is
-a rejected proposal rather than a corrupted record.
+**Skill:** `curate-corpus` — the maintenance side: works through `shelf debt`
+(unknown revisions, missing titles and bylines, unset page offsets, absent
+source URLs) by pairing the `shelf` CLI, which enumerates and performs every
+write, with a fan-out of curator agents, which read pages and propose values.
+Agents never write, so a bad read is a rejected proposal rather than a
+corrupted record.
 
 **Agent:** `datasheet-reader` — deep reads across sections or documents,
 driver/schematic audits, cataloguing new PDFs.

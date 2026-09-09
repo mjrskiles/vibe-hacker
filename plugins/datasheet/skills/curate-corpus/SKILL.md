@@ -1,6 +1,6 @@
 ---
 name: curate-corpus
-description: Close the metadata debt in a shelf corpus — unknown revisions, missing titles, paper bylines and years, printed-page offsets, source URLs — by pairing the shelf CLI with a fan-out of corpus-curator subagents. Use when catalog fields are unknown, when `shelf verify` reports unconfirmed guesses, or when preparing a corpus for sharing or replication.
+description: Close the metadata debt in a shelf corpus — unknown revisions, missing titles, paper bylines and years, printed-page offsets, source URLs — by pairing the shelf CLI with a fan-out of corpus-curator subagents. Use when `shelf debt` has open fields, when catalog values need confirming or correcting, or when preparing a corpus for sharing or replication.
 allowed-tools: Read, Grep, Glob, Bash, Task, Agent
 ---
 
@@ -40,23 +40,25 @@ and put it in every agent prompt:
 export SHELF_ROOT=docs/reference     # or `datasheet.root` from .claude/vibe-hacker.json
 ```
 
-The census script resolves the same root on its own; it needs no environment.
+Batches from `shelf debt --limit N` are sorted by id, so the same flag hands out
+the same N documents on every run — a batch you cannot reproduce is not a batch
+you can plan around.
 
 ## Procedure
 
-### 1. Census — what is open, and who can close it
+### 1. Take the census — what is open, and who can close it
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/curate-corpus/scripts/census.py            # all tiers
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/curate-corpus/scripts/census.py --tier cover --limit 8 --json
+shelf debt                                  # every open field, by tier
+shelf debt --tier cover --limit 8 --json    # one batch, as a work list
 ```
 
-`shelf verify` reports unknown revisions, unknown paper bylines, and unconfirmed
-`auto` guesses. It does **not** report a missing `source_url`, a null
-`page_offset`, or an empty `title` — those are not errors, just debt, so run
-the census as well as `shelf verify`, not instead of it.
+`shelf verify` and `shelf debt` answer different questions. `verify` is
+integrity — files present, hashes matching, no stray PDFs — and it should come
+back clean. `debt` is completeness, and on a working corpus it never will;
+that is the pile you are here to work through.
 
-The census sorts into four tiers by the cheapest thing that can settle the field:
+`debt` sorts into four tiers by the cheapest thing that can settle the field:
 
 - **`confirm`** — a value exists but is a machine guess. `shelf inspect` voted
   on some pages; an agent corroborates on a page it did not use, and
@@ -79,7 +81,7 @@ shelf inspect <id> --apply   # write the guesses, marked `auto`
 `inspect` reports its evidence (`1 (pp. 6…28, 23 agree)`). Strong agreement
 across many pages moves a field from the `offset` tier to the cheaper `confirm`
 tier. When `inspect` says `nothing to do` for every document, this tier is spent
-and the whole remaining census is agent work or undoable.
+and everything `shelf debt` still lists is agent work or undoable.
 
 ### 3. Fan out
 
@@ -107,7 +109,7 @@ Agents return `propose:` / `decline` / `undoable` / `contradict` per field.
 - **`propose` at medium confidence** — apply only if the evidence quoted in the
   report actually states the value. "Inferred from the AES convention number" is
   not a stated year; either chase it or leave it unknown.
-- **`decline`** — leave the field alone. It stays in the census, which is
+- **`decline`** — leave the field alone. It stays in `shelf debt`, which is
   correct: it is still open.
 - **`undoable`** — retire it (step 6).
 - **`contradict`** — the recorded value is *wrong*. Clear it back to the unknown
@@ -157,30 +159,35 @@ curation pass should read as a clean set of field changes.
 
 Some fields are not unknown, they are unavailable: a scanned paper with no folio
 anywhere has no `page_offset`, and no amount of re-reading will produce one.
-`shelf` has no field for this, so the convention is a marker in `notes`:
+Record that, so no future pass pays for the same reading again:
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/curate-corpus/scripts/census.py --undoable page_offset "no folio on any page"
+shelf undoable <id> page_offset "no folio on any page; checked pdf 1-4, 20, 51"
+shelf undoable <id> page_offset --clear      # if it turns out to be findable
 ```
 
-which prints the `shelf edit --notes` command to run. The census then stops
-counting that field. Retire a field only on an agent's `undoable` verdict with
-the pages it checked — never to make a number go down.
+The reason is required and it is the whole value of the record — write what was
+checked, so the next person can disagree with you on evidence. Retired fields
+leave `shelf debt`, are counted separately in its total, and are skipped by
+`inspect --apply` even under `--force`.
+
+Retire a field only on an agent's `undoable` verdict with the pages it checked —
+never to make a number go down.
 
 ### 7. Verify and report
 
 ```bash
-shelf verify                       # MISSING / CHANGED / ORPHAN are real problems
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/curate-corpus/scripts/census.py  # the debt, before and after
+shelf verify      # MISSING / CHANGED / ORPHAN are real problems; should be clean
+shelf debt        # the remaining debt, to compare against where you started
 ```
 
 Report as: **wrong values corrected** (lead with these — they are the findings
 that change what the corpus asserts), fields closed by tier, fields retired as
-undoable, fields declined and what would settle them, and the census delta. Name
+undoable, fields declined and what would settle them, and the `shelf debt` delta. Name
 the declines explicitly — they are the honest remainder, and hiding them in a
 total is how a corpus starts lying.
 
-The census total can go *up* after a good pass, when a contradiction clears a
+The debt total can go *up* after a good pass, when a contradiction clears a
 field that was wrongly filled. That is the number improving, not regressing; say
 so plainly rather than burying it.
 

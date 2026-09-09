@@ -89,8 +89,9 @@ when front matter is unnumbered, when the document restarts numbering per
 chapter, or when the folio is roman for the preface. Say which pages you used.
 
 If the document has no printed folio at all — many scanned papers do not — this
-field is **undoable**, not unknown. Report it as such with the pages you checked.
-Retiring it is the orchestrator's job, not yours.
+field is **undoable**, not unknown. Report it as such with the pages you checked;
+those pages become the reason recorded by `shelf undoable`, so the next reader
+can disagree with you on evidence. Retiring it is the orchestrator's job.
 
 **`source_url`** — the vendor's or publisher's own download page for *this*
 document, at *this* revision where the vendor versions its URLs. A DOI resolver
