@@ -204,8 +204,9 @@ so plainly rather than burying it.
 - **Verbatim from the document.** Vendor formatting is preserved (`Rev. C`, not
   `rev c`). Do not normalise across vendors — the string is what the document
   says about itself.
-- **One batch, one commit.** Keeps the `shelf.json` diff reviewable and makes a
-  bad pass revertible as a unit.
+- **Keep each batch's `shelf.json` changes together.** Finishing one batch before
+  starting the next keeps the diff reviewable and a bad pass revertible as a
+  unit; committing follows the user's normal git workflow.
 - **Never `--force`.** `shelf inspect --force` overwrites confirmed values with
   guesses, which is precisely backwards.
 

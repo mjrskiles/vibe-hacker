@@ -97,13 +97,6 @@ fi
 declare -a FILES=()
 INSTRUCTIONS=""
 
-# Check greenfield mode
-GREENFIELD="disabled"
-if [[ -f "$CONFIG_FILE" ]]; then
-    gf=$(jq -r '.greenfield_mode // false' "$CONFIG_FILE" 2>/dev/null || echo "false")
-    [[ "$gf" == "true" ]] && GREENFIELD="enabled"
-fi
-
 # Check haiku mode
 HAIKU="disabled"
 if [[ -f "$CONFIG_FILE" ]]; then
@@ -281,11 +274,6 @@ fi
         echo ""
     fi
 
-    if [[ "$GREENFIELD" == "enabled" ]]; then
-        echo "Greenfield mode: ENABLED"
-        echo ""
-    fi
-
     if [[ "$HAIKU" == "enabled" ]]; then
         echo "Haiku mode: ENABLED"
         echo ""
@@ -311,10 +299,6 @@ fi
 
 if [[ -n "$REPO_STATUS_TEXT" ]]; then
     CONTEXT_PARTS+=("$REPO_STATUS_TEXT")
-fi
-
-if [[ "$GREENFIELD" == "enabled" ]]; then
-    CONTEXT_PARTS+=("GREENFIELD MODE: This is a prototype project with zero users. Delete old code entirely, no backwards compatibility needed, no deprecation comments.")
 fi
 
 if [[ -n "$INSTRUCTIONS" ]]; then

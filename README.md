@@ -150,7 +150,7 @@ All plugins read from `.claude/vibe-hacker.json`:
 
 Each plugin reads only its relevant keys:
 - `greenfield-mode` reads: `greenfield_mode`, `greenfield_strict`, `greenfield_patterns`, `greenfield_exclude`
-- `primer` reads: `priming`, `greenfield_mode` (for display)
+- `primer` reads: `priming`
 - `librarian` reads: `planning`, `protected_paths`
 - `backlog` reads: `backlog` (root directory)
 - `datasheet` reads: `datasheet` (`root` — corpus directory, default `docs/reference`)

@@ -79,21 +79,6 @@ If no config exists, primer falls back to:
 2. `README.md` (if exists)
 3. First 5 markdown files in `docs/` (last resort)
 
-## Greenfield Mode Support
-
-If `greenfield_mode: true` is set in config, primer displays a reminder:
-
-```
-Greenfield mode: ENABLED
-
-REMINDER: This is a prototype project with no users.
-- Delete old code, don't comment it out
-- No backwards compatibility needed
-- No deprecation comments
-```
-
-This works whether or not the greenfield-mode plugin is installed.
-
 ## Haiku Mode
 
 Enable `priming.haiku: true` to have Claude write a haiku after priming:

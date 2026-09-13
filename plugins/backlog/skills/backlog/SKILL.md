@@ -10,7 +10,7 @@ Manage lightweight project backlogs. Backlogs are for ideas, polish items, and s
 
 ## When to Use
 
-- Capturing polish ideas while working ("this could use velocity sensitivity")
+- Capturing a polish idea the user wants recorded ("add velocity sensitivity to the backlog")
 - Tracking small improvements that don't warrant a planning document
 - Managing a queue of tasks for a specific project or area
 - Reviewing what's open and deciding what to tackle next
@@ -125,7 +125,7 @@ Default root: `docs/backlogs/`
 - **Priorities**: `high` (do soon), `med` (do eventually), `low` (nice to have), or omitted (unprioritized)
 - **IDs** auto-increment and are never reused
 - Items move between Open → Done or Open → Dropped. Reopen moves back to Open.
-- When adding items mid-task, keep it quick — one-liner capture, move on
+- Items are added when the user asks, or after you propose one and the user agrees. When that happens mid-task, keep it quick — one-liner capture, then back to the task
 
 ## Parsing Arguments
 
