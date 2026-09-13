@@ -40,7 +40,7 @@ Pass the target via `--project-dir`:
 python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/new.py fdp "Title" --project-dir /absolute/path/to/sbl-apps
 ```
 
-## Document Format (v0.2.1)
+## Document Format
 
 All documents have YAML frontmatter for structured metadata:
 
@@ -125,7 +125,15 @@ Use the librarian scripts when:
 - Archiving a completed or superseded document
 - Listing active planning documents
 
-**Do NOT manually create or renumber planning documents.** Always use the scripts.
+Numbered documents are created and renumbered through the scripts, which keep IDs, filenames, and frontmatter consistent.
+
+### Scope
+
+The librarian manages only the configured document types and their subdirectories. Other folders under the planning root (for example sketchbooks, drafts, or temp) are outside it, and their contents are not converted into numbered documents unless the user asks.
+
+### Attribution
+
+Planning documents record what the user decided or approved. Your own proposals go in a clearly labeled section, such as "Suggestions (assistant, not yet approved)", until the user approves them.
 
 ## Available Scripts
 
@@ -141,11 +149,11 @@ Types: `adr`, `fdp`, `ap`, `report`
 
 Examples:
 ```bash
-python3 scripts/new.py adr "Use PostgreSQL for persistence"
-python3 scripts/new.py fdp "User Authentication System"
-python3 scripts/new.py ap "Implement login flow"
-python3 scripts/new.py report "Q4 Performance Analysis"
-python3 scripts/new.py fdp "Davis Mixer" --project-dir /path/to/sbl-apps
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/new.py adr "Use PostgreSQL for persistence"
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/new.py fdp "User Authentication System"
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/new.py ap "Implement login flow"
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/new.py report "Q4 Performance Analysis"
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/new.py fdp "Davis Mixer" --project-dir /path/to/sbl-apps
 ```
 
 ### Add Addendum
@@ -158,8 +166,8 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/append.py <doc-id> "<titl
 
 Examples:
 ```bash
-python3 scripts/append.py ADR-001 "Performance Clarification"
-python3 scripts/append.py ADR-001 "Migration note" --body "Use pg_dump for best results"
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/append.py ADR-001 "Performance Clarification"
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/append.py ADR-001 "Migration note" --body "Use pg_dump for best results"
 ```
 
 ### Supersede Document
@@ -178,7 +186,7 @@ This will:
 
 Example:
 ```bash
-python3 scripts/supersede.py ADR-001 "Revised Database Strategy"
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/supersede.py ADR-001 "Revised Database Strategy"
 ```
 
 ### Add Related Links
@@ -191,8 +199,8 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/relate.py <doc-id> <relat
 
 Examples:
 ```bash
-python3 scripts/relate.py ADR-001 FDP-003
-python3 scripts/relate.py ADR-001 FDP-003 ADR-002 --bidirectional
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/relate.py ADR-001 FDP-003
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/relate.py ADR-001 FDP-003 ADR-002 --bidirectional
 ```
 
 ### Update Status
@@ -203,9 +211,9 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/update-status.py <doc-id>
 
 Examples:
 ```bash
-python3 scripts/update-status.py ADR-001 accepted
-python3 scripts/update-status.py FDP-002 "in progress"
-python3 scripts/update-status.py RPT-001 published
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/update-status.py ADR-001 accepted
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/update-status.py FDP-002 "in progress"
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/update-status.py RPT-001 published
 ```
 
 Valid statuses by type:
@@ -224,13 +232,13 @@ Archiving moves the document to `archive/` and generates an `ARCHIVE.md` index i
 
 Examples:
 ```bash
-python3 scripts/archive.py ADR-001
-python3 scripts/archive.py FDP-002
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/archive.py ADR-001
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/archive.py FDP-002
 ```
 
 To rebuild the archive index without archiving a document:
 ```bash
-python3 scripts/archive.py --regenerate-index [--type TYPE] [--project-dir PATH]
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/archive.py --regenerate-index [--type TYPE] [--project-dir PATH]
 ```
 
 ### Check Edit Permission
@@ -251,7 +259,7 @@ Checks if a document can be edited based on its status. Outputs the file path if
 
 ### Review Open Documents
 
-Show all planning documents not in a terminal state, with brief summaries. Use this to audit what's still open and decide what to archive, advance, or abandon.
+Show all planning documents not in a terminal state, with brief summaries. Use this to show the user what's still open so they can decide what to archive, advance, or abandon.
 
 ```bash
 python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/review.py [--type TYPE] [--project-dir PATH]
@@ -259,9 +267,9 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/review.py [--type TYPE] [
 
 Examples:
 ```bash
-python3 scripts/review.py                     # Review all open documents
-python3 scripts/review.py --type fdp          # Review open FDPs only
-python3 scripts/review.py --project-dir /path/to/sbl-apps  # Review app-level plans
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/review.py                     # Review all open documents
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/review.py --type fdp          # Review open FDPs only
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/review.py --project-dir /path/to/sbl-apps  # Review app-level plans
 ```
 
 Terminal statuses (excluded from review):
@@ -280,14 +288,16 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/list.py [--type TYPE] [--
 
 Examples:
 ```bash
-python3 scripts/list.py
-python3 scripts/list.py --type adr
-python3 scripts/list.py --type report
-python3 scripts/list.py --status proposed
-python3 scripts/list.py --include-archived
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/list.py
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/list.py --type adr
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/list.py --type report
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/list.py --status proposed
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/list.py --include-archived
 ```
 
 ## Document Lifecycle
+
+Moving a document to a final status (accepted, implemented, completed, published, superseded, deprecated, abandoned, obsoleted) and archiving it are separate steps, and both happen when the user decides. When `update-status.py` suggests archiving, pass the suggestion on to the user rather than running `archive.py`.
 
 ### ADR Lifecycle
 ```
@@ -295,9 +305,9 @@ Proposed → Accepted → [Superseded | Deprecated]
 ```
 
 - **Proposed**: Under discussion, can be edited
-- **Accepted**: Decision made, becomes read-only (use addenda for updates)
-- **Superseded**: Replaced by newer ADR, archived
-- **Deprecated**: No longer applicable, archived
+- **Accepted**: The user has made the decision; read-only (use addenda for updates)
+- **Superseded**: Replaced by newer ADR; can be archived
+- **Deprecated**: No longer applicable; can be archived
 
 ### FDP Lifecycle
 ```
@@ -306,8 +316,8 @@ Proposed → In Progress → [Implemented | Abandoned]
 
 - **Proposed**: Design under review
 - **In Progress**: Actively being implemented
-- **Implemented**: Complete, archived
-- **Abandoned**: Not pursued, archived
+- **Implemented**: Complete; can be archived
+- **Abandoned**: Not pursued; can be archived
 
 ### Action Plan Lifecycle
 ```
@@ -315,8 +325,8 @@ Active → [Completed | Abandoned]
 ```
 
 - **Active**: Work in progress
-- **Completed**: All tasks done, archived
-- **Abandoned**: Work stopped, archived
+- **Completed**: All tasks done; can be archived
+- **Abandoned**: Work stopped; can be archived
 
 ### Report Lifecycle
 ```

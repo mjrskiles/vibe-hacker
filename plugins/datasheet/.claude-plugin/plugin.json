@@ -1,6 +1,6 @@
 {
   "name": "datasheet",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Consult a local shelf of datasheets, reference manuals, and errata sheets with page-level citations — lookup skill for in-context questions, reader agent for deep reads, and a curation skill and agent that close the catalog's metadata gaps from the documents themselves",
   "author": {
     "name": "Michael Skiles",

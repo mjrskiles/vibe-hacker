@@ -62,11 +62,11 @@ main() {
         else
             echo -e "  Strict mode: off - cruft will warn only" >&2
         fi
-        echo -e "  No backwards compatibility needed. Delete, don't deprecate." >&2
+        echo -e "  Prototype with no users: replaced code is deleted, not deprecated." >&2
         echo "" >&2
 
         # Inject context into Claude (stdout JSON)
-        local context="GREENFIELD MODE ACTIVE: This is a prototype project with zero users. When making changes: DELETE old code entirely (don't deprecate or comment out), NO backwards-compatibility shims or re-exports, NO deprecation comments, NO migration documentation. Clean breaks only."
+        local context="Greenfield mode is on: this project is a prototype with no users. When code is replaced, delete the old version rather than deprecating it, shimming it, re-exporting it, commenting it out, or writing migration notes for it. This applies to code; documents that deliberately keep history (decision records, changelogs, notes) are unaffected."
 
         # Escape for JSON
         context=$(echo "$context" | jq -Rs '.')

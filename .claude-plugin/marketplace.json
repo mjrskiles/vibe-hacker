@@ -8,32 +8,32 @@
   "plugins": [
     {
       "name": "greenfield-mode",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "description": "Prevent backwards-compatibility cruft in prototype projects",
       "source": "./plugins/greenfield-mode"
     },
     {
       "name": "primer",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "description": "Context priming - load project files on session start",
       "source": "./plugins/primer"
     },
     {
       "name": "librarian",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "description": "Structured planning documents with protected paths",
       "source": "./plugins/librarian"
     },
     {
       "name": "backlog",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "description": "Lightweight project backlogs for ideas, polish items, and small improvements",
       "source": "./plugins/backlog"
     },
     {
       "name": "datasheet",
-      "version": "0.1.0",
-      "description": "Page-cited lookups against a local corpus of datasheets, reference manuals, and errata — skill + deep-read agent",
+      "version": "0.3.0",
+      "description": "Consult a local shelf of datasheets, reference manuals, and errata sheets with page-level citations — lookup skill for in-context questions, reader agent for deep reads, and a curation skill and agent that close the catalog's metadata gaps from the documents themselves",
       "source": "./plugins/datasheet"
     }
   ]
