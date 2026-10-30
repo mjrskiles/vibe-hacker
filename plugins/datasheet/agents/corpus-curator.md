@@ -82,11 +82,13 @@ title and byline, prefer a DOI or the publisher's own record, and report the URL
 you took it from. An AES convention number implies a year but does not state
 one — if that is all you have, report it as inferred, with the convention number.
 
-**`page_offset`** — `printed page number − PDF index`, on a page where both are
+**`page_offset`** — `PDF index − printed page number`, on a page where both are
 known. Read at least **two** pages that are far apart (say PDF 10 and PDF 40),
 compute the offset from each, and report it only if they agree. They disagree
 when front matter is unnumbered, when the document restarts numbering per
 chapter, or when the folio is roman for the preface. Say which pages you used.
+A journal reprint numbered from mid-volume has a negative offset: PDF page 1
+printed as 974 gives −973.
 
 If the document has no printed folio at all — many scanned papers do not — this
 field is **undoable**, not unknown. Report it as such with the pages you checked;
