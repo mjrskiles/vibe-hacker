@@ -65,7 +65,7 @@ that is the pile you are here to work through.
   `shelf edit` clears the `auto` flag.
 - **`cover`** — readable from the document's own front matter: revision, title,
   paper byline.
-- **`offset`** — printed folio minus PDF index, from two widely separated pages.
+- **`offset`** — PDF index minus printed folio, from two widely separated pages.
 - **`web`** — not in the document at all: `source_url`, and the years no cover
   states. Needs `WebSearch` / `WebFetch`.
 
