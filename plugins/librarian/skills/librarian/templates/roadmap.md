@@ -2,32 +2,23 @@
 
 > Last updated: {{DATE}}
 
-## Immediate (This Week)
+## Now
 
-_What are we working on right now?_
+_What is being worked on, and the issues that carry it._
 
-- [ ] Task one
-- [ ] Task two
+- Thread: issues
 
-## Medium Term (This Month)
+## Next
 
-_What's coming up next?_
+_What follows._
 
-- [ ] Feature or goal
-- [ ] Another milestone
+- Thread
 
-## Long Term (This Quarter+)
+## Later
 
-_Where are we heading?_
+_Direction, not commitments._
 
-- [ ] Vision item
-- [ ] Strategic goal
-
-## Recently Completed
-
-_What did we just finish?_
-
-- [x] ~~Completed item~~ (date)
+- Goal
 
 ---
 

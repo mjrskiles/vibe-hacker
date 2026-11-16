@@ -223,7 +223,10 @@ To manage planning documents, use the librarian skill scripts:
   # Create new documents (auto-numbered)
   python3 \${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/new.py adr \"Title\"
   python3 \${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/new.py fdp \"Title\"
-  python3 \${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/new.py ap \"Title\"
+  python3 \${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/new.py report \"Title\"
+
+  # Set a status
+  python3 \${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/update-status.py FDP-001 implemented
 
   # Archive documents
   python3 \${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/archive.py ADR-001

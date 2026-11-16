@@ -19,6 +19,7 @@ Manage ADRs, FDPs, Action Plans, Reports, and Roadmaps with:
 | FDP | Feature Design Proposal | `FDP-001` | `designs/` |
 | AP | Action Plan | `AP-001` | `action-plans/` |
 | Report | Reports and analysis | `RPT-001` | `reports/` |
+| Log | Dated entries, one file per thread | N/A | `logs/<thread>.md` |
 | Roadmap | Project goals | N/A | `roadmap.md` |
 
 ### Basic Operations
@@ -69,6 +70,24 @@ python3 scripts/supersede.py ADR-001 "Revised Database Strategy"
 python3 scripts/relate.py ADR-001 FDP-003 --bidirectional
 ```
 
+### Logs, retired types, archive notes
+
+**Add a dated entry to a thread's log** (`<planning_root>/logs/<thread>.md`, created on first use):
+```bash
+python3 scripts/log.py davis "Step 6 listening" --body "Build: main a5c4f3d ..."
+```
+
+**Retire a type**: list its key in `planning.retired`. Its documents stay readable and can still be
+archived; `new.py` and `supersede.py` refuse to create one.
+
+**Archive note**: `archive.py` leaves a note under an archived document's title with the date, the
+status it had, and the sentence in `planning.archive_note`.
+
+**Templates**: a template of the same name in `<planning_root>/templates/` takes precedence over the
+shipped one.
+
+**Review**: `review.py` lists open documents, then finished documents that are still live.
+
 ### Protected Paths
 
 Control access to files with three protection tiers:
@@ -81,8 +100,9 @@ Control access to files with three protection tiers:
 
 ### Roadmap Reminder
 
-PreCompact hook reminds you to update the roadmap before context compaction — only when
-the roadmap has been touched in the last 30 days (git history, falling back to mtime).
+PreCompact hook reminds you to check the roadmap before context compaction — only when
+the roadmap has been touched in the last 30 days (its `> Last updated:` line, falling back to git
+history, then mtime).
 A roadmap nobody maintains stops nagging on its own.
 
 ## Installation
@@ -104,7 +124,9 @@ Create `.claude/vibe-hacker.json` in your project:
       "fdp": "designs",
       "ap": "action-plans",
       "report": "reports"
-    }
+    },
+    "retired": [],
+    "archive_note": "A historical record."
   },
   "protected_paths": {
     "planning_root": "docs/planning",
@@ -133,6 +155,8 @@ Create `.claude/vibe-hacker.json` in your project:
 | `planning.subdirs.fdp` | string | `"designs"` | Subdirectory for FDPs |
 | `planning.subdirs.ap` | string | `"action-plans"` | Subdirectory for Action Plans |
 | `planning.subdirs.report` | string | `"reports"` | Subdirectory for Reports |
+| `planning.retired` | array | `[]` | Type keys that can no longer be created |
+| `planning.archive_note` | string | `"A historical record."` | Closing sentence of the archive note |
 | `protected_paths.planning_root` | string | `"docs/planning"` | Root for planning docs |
 | `protected_paths.rules` | array | `[]` | Protection rules |
 
@@ -178,8 +202,17 @@ Additional notes added after acceptance.
 ## Requirements
 
 - [jq](https://jqlang.github.io/jq/) - JSON processor
-- Python 3.x - For planning scripts
+- Python 3.10+ - For planning scripts
 - PyYAML (optional) - For better YAML handling
+- pytest - For the tests
+
+## Tests
+
+```bash
+pytest plugins/librarian/tests
+```
+
+The tests run each script against a temporary project directory.
 
 ## Part of Vibe Hacker
 

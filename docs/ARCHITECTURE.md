@@ -53,7 +53,7 @@ Each plugin reads only its relevant keys:
 |--------|-------------|
 | greenfield-mode | `greenfield_mode`, `greenfield_strict`, `greenfield_patterns`, `greenfield_exclude` |
 | primer | `priming` (files, globs, repos, instructions, focuses), `greenfield_mode` |
-| librarian | `planning` (version, subdirs), `protected_paths` (rules) |
+| librarian | `planning` (version, subdirs, retired, archive_note), `protected_paths` (rules) |
 | backlog | `backlog` (root directory) |
 | datasheet | `datasheet` (`root` — shelf directory, default `docs/reference`) |
 

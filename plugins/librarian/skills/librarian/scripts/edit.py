@@ -20,135 +20,35 @@ Exit codes:
 """
 
 import argparse
-import re
 import sys
 from pathlib import Path
 
 from config import (
+    find_document_by_id,
     get_project_dir,
-    get_planning_root,
-    get_all_types,
     get_type_config,
+    id_examples,
+    is_archived,
+    is_retired,
     is_status_editable,
+    parse_doc_id,
 )
-from frontmatter import parse_frontmatter, extract_status_from_body
-
-
-def parse_doc_id(doc_id: str) -> tuple[str, int]:
-    """
-    Parse a document ID into type and number.
-
-    Args:
-        doc_id: Document ID like 'ADR-001', 'FDP-002', 'AP-001', 'RPT-001'
-
-    Returns:
-        Tuple of (doc_type, number)
-
-    Raises:
-        ValueError: If ID format is not recognized
-    """
-    doc_id = doc_id.upper()
-
-    patterns = [
-        (r'^ADR-(\d+)$', 'adr'),
-        (r'^FDP-(\d+)$', 'fdp'),
-        (r'^AP-(\d+)$', 'ap'),
-        (r'^RPT-(\d+)$', 'report'),
-    ]
-
-    for pattern, doc_type in patterns:
-        match = re.match(pattern, doc_id)
-        if match:
-            return doc_type, int(match.group(1))
-
-    raise ValueError(f"Invalid document ID: {doc_id}. Expected format: ADR-001, FDP-002, AP-003, or RPT-001")
-
-
-def find_document(doc_type: str, number: int, project_dir: Path, include_archive: bool = True) -> Path | None:
-    """Find a document by type and number."""
-    type_config = get_type_config(doc_type)
-    planning_root = project_dir / get_planning_root()
-    doc_dir = planning_root / type_config['dir']
-
-    if not doc_dir.exists():
-        return None
-
-    # Build pattern based on type config
-    prefix = type_config.get('prefix', '')
-    if prefix:
-        pattern = re.compile(rf'^{re.escape(prefix)}(\d+)-.*\.md$')
-    else:
-        pattern = re.compile(r'^(\d+)-.*\.md$')
-
-    # Check main directory first
-    for f in doc_dir.iterdir():
-        if f.is_file():
-            match = pattern.match(f.name)
-            if match and int(match.group(1)) == number:
-                return f
-
-    # Check archive if requested
-    if include_archive:
-        archive_dir = doc_dir / 'archive'
-        if archive_dir.exists():
-            for f in archive_dir.iterdir():
-                if f.is_file():
-                    match = pattern.match(f.name)
-                    if match and int(match.group(1)) == number:
-                        return f
-
-    return None
+from frontmatter import document_status
 
 
 def extract_status(filepath: Path) -> str:
     """Extract current status from a document (frontmatter or body)."""
-    content = filepath.read_text()
+    return document_status(filepath.read_text()) or 'Unknown'
 
-    # Try frontmatter first
-    frontmatter, body = parse_frontmatter(content)
-    if frontmatter and 'status' in frontmatter:
-        return frontmatter['status']
-
-    # Fallback to body parsing
-    status = extract_status_from_body(content)
-    if status:
-        return status
-
-    return 'Unknown'
-
-
-def is_archived(filepath: Path) -> bool:
-    """Check if document is in archive directory."""
-    return 'archive' in filepath.parts
 
 
 def get_unlock_instruction(doc_type: str, status: str) -> str:
     """Get instruction for how to modify a locked document."""
-    status_lower = status.lower()
-
-    instructions = {
-        'adr': {
-            'accepted': "To modify an accepted ADR, create a new ADR that supersedes it, or add an addendum.",
-            'deprecated': "Deprecated ADRs are read-only. Create a new ADR or add an addendum.",
-            'superseded': "Superseded ADRs are read-only. Edit the superseding ADR or add an addendum.",
-        },
-        'fdp': {
-            'implemented': "Implemented FDPs are read-only. Create a new FDP or add an addendum.",
-            'abandoned': "Abandoned FDPs are read-only. Create a new FDP to revisit.",
-        },
-        'ap': {
-            'completed': "Completed action plans are read-only. Create a new AP for follow-up work.",
-            'abandoned': "Abandoned action plans are read-only. Create a new AP to revisit.",
-        },
-        'report': {
-            'published': "Published reports are read-only. Create a new report or add an addendum.",
-            'superseded': "Superseded reports are read-only. Add an addendum if needed.",
-            'obsoleted': "Obsoleted reports are read-only.",
-        },
-    }
-
-    type_instructions = instructions.get(doc_type, {})
-    return type_instructions.get(status_lower, f"Document with status '{status}' is locked.")
+    name = get_type_config(doc_type).get('name', doc_type.upper())
+    instruction = f"A {name} with status '{status.lower()}' is read-only. Add an addendum"
+    if is_retired(doc_type):
+        return instruction + "."
+    return instruction + ", or create a document that supersedes it."
 
 
 def check_editable(doc_type: str, status: str, is_in_archive: bool) -> tuple[bool, str | None]:
@@ -174,12 +74,8 @@ def check_document_editable(doc_id: str, project_dir: Path, force: bool = False)
     Returns:
         tuple of (filepath, is_editable, message)
     """
-    doc_type, number = parse_doc_id(doc_id)
-
-    # Find the document
-    filepath = find_document(doc_type, number, project_dir)
-    if not filepath:
-        raise FileNotFoundError(f"Document not found: {doc_id}")
+    doc_type, _ = parse_doc_id(doc_id)
+    filepath = find_document_by_id(doc_id, project_dir)
 
     # Get status and check if editable
     status = extract_status(filepath)
@@ -197,14 +93,12 @@ def check_document_editable(doc_id: str, project_dir: Path, force: bool = False)
 
 
 def main():
-    all_types = get_all_types()
-
     parser = argparse.ArgumentParser(
         description='Check if a planning document can be edited and output its path.'
     )
     parser.add_argument(
         'doc_id',
-        help='Document ID (e.g., ADR-001, FDP-002, AP-003, RPT-001)'
+        help=f'Document ID (e.g., {id_examples()})'
     )
     parser.add_argument(
         '--force', '-f',

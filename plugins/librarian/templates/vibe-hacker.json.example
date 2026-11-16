@@ -3,8 +3,11 @@
     "subdirs": {
       "adr": "decision-records",
       "fdp": "feature-designs",
-      "ap": "action-plans"
-    }
+      "ap": "action-plans",
+      "report": "reports"
+    },
+    "retired": [],
+    "archive_note": "A historical record."
   },
   "protected_paths": {
     "planning_root": "docs/planning",

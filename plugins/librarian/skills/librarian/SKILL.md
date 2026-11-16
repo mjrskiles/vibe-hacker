@@ -1,6 +1,6 @@
 ---
 name: librarian
-description: Manage planning documents (ADRs, FDPs, action plans, reports). Use when creating, archiving, or listing planning docs. Enforces proper numbering and structure.
+description: Manage planning documents (ADRs, FDPs, action plans, reports) and logs. Use when creating, archiving, or listing planning docs, or adding a log entry. Enforces proper numbering and structure.
 allowed-tools: Read, Write, Bash, Glob, Grep
 ---
 
@@ -16,7 +16,10 @@ Manage planning documents with proper structure, numbering, and lifecycle.
 | FDP | Feature Design Proposal | `FDP-001` | `designs/` |
 | AP | Action Plan | `AP-001` | `action-plans/` |
 | Report | Reports and analysis | `RPT-001` | `reports/` |
+| Log | Dated entries, one file per thread | N/A | `logs/<thread>.md` |
 | Roadmap | Project goals and vision | N/A | `roadmap.md` |
+
+A project can retire a type (`planning.retired`). Its documents can still be read, given addenda, related, given a status, archived and listed; `new.py` and `supersede.py` refuse to create one.
 
 ## Workspace Targeting
 
@@ -99,7 +102,9 @@ Configure planning in `.claude/vibe-hacker.json`:
       "fdp": "designs",
       "ap": "action-plans",
       "report": "reports"
-    }
+    },
+    "retired": [],
+    "archive_note": "A historical record."
   },
   "protected_paths": {
     "planning_root": "docs/planning"
@@ -113,6 +118,8 @@ Configure planning in `.claude/vibe-hacker.json`:
 | `planning.subdirs.fdp` | `designs` | Subdirectory for FDPs |
 | `planning.subdirs.ap` | `action-plans` | Subdirectory for Action Plans |
 | `planning.subdirs.report` | `reports` | Subdirectory for Reports |
+| `planning.retired` | `[]` | Type keys (`adr`, `fdp`, `ap`, `report`) that can no longer be created |
+| `planning.archive_note` | `A historical record.` | Closing sentence of the note `archive.py` leaves under an archived document's title |
 | `protected_paths.planning_root` | `docs/planning` | Root directory for all planning docs |
 
 ## When to Use This Skill
@@ -145,7 +152,7 @@ All scripts are in `${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/`.
 python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/new.py <type> "<title>" [--project-dir PATH]
 ```
 
-Types: `adr`, `fdp`, `ap`, `report`
+Types: `adr`, `fdp`, `ap`, `report`. A type listed in `planning.retired` is refused.
 
 Examples:
 ```bash
@@ -222,13 +229,15 @@ Valid statuses by type:
 - **AP**: active, completed, abandoned
 - **Report**: draft, published, superseded, obsoleted
 
+The status is written to the frontmatter and under the first `## Status` heading. A Status paragraph that is only a status is replaced. A paragraph of prose is kept whole, and the status goes on a line of its own above it.
+
 ### Archive Document
 
 ```bash
 python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/archive.py <doc-id> [--project-dir PATH]
 ```
 
-Archiving moves the document to `archive/` and generates an `ARCHIVE.md` index in the type directory listing all archived documents.
+Archiving moves the document to `archive/` and generates an `ARCHIVE.md` index in the type directory listing all archived documents. The archived document's status becomes `archived`, and a note goes under its title: the date, the status it had, and the sentence in `planning.archive_note`.
 
 Examples:
 ```bash
@@ -239,6 +248,22 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/archive.py FDP-002
 To rebuild the archive index without archiving a document:
 ```bash
 python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/archive.py --regenerate-index [--type TYPE] [--project-dir PATH]
+```
+
+### Add Log Entry
+
+A log is one append-only file per thread at `<planning_root>/logs/<thread>.md`. It has no number, status or frontmatter. Each entry is a dated heading and a body.
+
+```bash
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/log.py <thread> "<title>" [--body "<content>"] [--project-dir PATH]
+```
+
+The first entry for a thread creates its file. `--body -` reads the body from stdin.
+
+Examples:
+```bash
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/log.py davis "Step 6 listening" --body "Build: main a5c4f3d ..."
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/log.py davis "Step 6 listening" --body - < notes.md
 ```
 
 ### Check Edit Permission
@@ -259,7 +284,7 @@ Checks if a document can be edited based on its status. Outputs the file path if
 
 ### Review Open Documents
 
-Show all planning documents not in a terminal state, with brief summaries. Use this to show the user what's still open so they can decide what to archive, advance, or abandon.
+Show the live planning documents that need attention, in two lists: documents not in a terminal state, with brief summaries, and finished documents that have not been archived (status implemented, completed, abandoned, superseded, deprecated or obsoleted). Use this to show the user what's still open so they can decide what to archive, advance, or abandon.
 
 ```bash
 python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/review.py [--type TYPE] [--project-dir PATH]
@@ -340,12 +365,13 @@ Draft → Published → [Superseded | Obsoleted]
 
 ## Roadmap
 
-The roadmap is a single markdown file tracking project goals at different time horizons:
+The roadmap is a single markdown file that looks forward:
 
-- **Immediate** (This Week) - Current focus
-- **Medium Term** (This Month) - Coming up next
-- **Long Term** (This Quarter+) - Vision and direction
-- **Recently Completed** - What was just finished
+- **Now** - What is being worked on, and the issues that carry it
+- **Next** - What follows
+- **Later** - Direction, not commitments
+
+It carries a `> Last updated: YYYY-MM-DD` line.
 
 ### Initialize Roadmap
 
@@ -353,7 +379,7 @@ The roadmap is a single markdown file tracking project goals at different time h
 python3 ${CLAUDE_PLUGIN_ROOT}/skills/librarian/scripts/init-roadmap.py
 ```
 
-A **PreCompact hook** reminds you to update the roadmap before context compaction.
+A **PreCompact hook** reminds you to check the roadmap before context compaction, while its `Last updated` date is within 30 days.
 
 ## Protected Paths
 
@@ -373,4 +399,6 @@ Templates are in `${CLAUDE_PLUGIN_ROOT}/skills/librarian/templates/`:
 - `report.md` - Report
 - `roadmap.md` - Project Roadmap
 
-All templates include frontmatter and an addenda section.
+A template of the same name in `<planning_root>/templates/` of the project takes precedence over the one shipped here.
+
+The document templates include frontmatter and an addenda section. The FDP template's sections are Status, Goal, Context, Options (with a labeled recommendation), Questions, Steps and Done when.

@@ -14,15 +14,15 @@ Examples:
 """
 
 import argparse
-import re
 import sys
 from pathlib import Path
 
 from config import (
-    get_project_dir,
-    get_planning_root,
+    ARCHIVE_DIR,
     get_all_types,
-    get_type_config,
+    get_filename_pattern,
+    get_planning_root,
+    get_project_dir,
 )
 from frontmatter import parse_frontmatter, extract_status_from_body, extract_title_from_body
 
@@ -67,17 +67,6 @@ def extract_title(filepath: Path) -> str:
         return filepath.stem
 
 
-def get_number_pattern(doc_type: str) -> re.Pattern:
-    """Get regex pattern to extract number from filename."""
-    type_config = get_type_config(doc_type)
-    prefix = type_config.get('prefix', '')
-
-    if prefix:
-        return re.compile(rf'^{re.escape(prefix)}(\d+)-(.*)\.md$')
-    else:
-        return re.compile(r'^(\d+)-(.*)\.md$')
-
-
 def list_documents(
     project_dir: Path,
     doc_type: str | None = None,
@@ -102,7 +91,7 @@ def list_documents(
         if not doc_dir.exists():
             continue
 
-        pattern = get_number_pattern(dtype)
+        pattern = get_filename_pattern(dtype)
         id_format = type_config.get('id_format', '{number:03d}')
         label = type_config.get('name', dtype.upper())
 
@@ -135,7 +124,7 @@ def list_documents(
 
         # Check archive directory
         if include_archived:
-            archive_dir = doc_dir / 'archive'
+            archive_dir = doc_dir / ARCHIVE_DIR
             if archive_dir.exists():
                 for f in sorted(archive_dir.iterdir()):
                     if not f.is_file():

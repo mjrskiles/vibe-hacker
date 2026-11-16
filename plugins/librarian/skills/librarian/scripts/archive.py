@@ -15,116 +15,53 @@ Examples:
     archive.py --regenerate-index --type fdp   # rebuild just feature-designs
 
 This will:
-    1. Update the document's status to "archived" in frontmatter and body
-    2. Add an "Archived" date to the body
+    1. Set the document's status to "archived" in frontmatter and body
+    2. Leave a note under the title: the date, the status it had, and the
+       sentence in planning.archive_note
     3. Move the file to the archive/ subdirectory
     4. Generate/update ARCHIVE.md index in the type directory
 """
 
 import argparse
 import re
-import shutil
 import sys
 from datetime import date
 from pathlib import Path
 
 from config import (
-    get_project_dir,
-    get_planning_root,
-    get_type_config,
+    ARCHIVE_DIR,
+    find_document_by_id,
     get_all_types,
+    get_archive_note,
+    get_filename_pattern,
+    get_id_prefix,
+    get_planning_root,
+    get_project_dir,
+    get_type_config,
+    id_examples,
+    is_archived,
+    parse_doc_id,
 )
-from frontmatter import parse_frontmatter, render_frontmatter
+from frontmatter import document_status, insert_note_under_title, parse_frontmatter, set_status
+
+ARCHIVED_STATUS = 'archived'
 
 
-def parse_doc_id(doc_id: str) -> tuple[str, int]:
-    """
-    Parse a document ID into type and number.
-
-    Args:
-        doc_id: Document ID like 'ADR-001', 'FDP-002', 'AP-001', 'RPT-001'
-
-    Returns:
-        Tuple of (doc_type, number)
-
-    Raises:
-        ValueError: If ID format is not recognized
-    """
-    doc_id = doc_id.upper()
-
-    patterns = [
-        (r'^ADR-(\d+)$', 'adr'),
-        (r'^FDP-(\d+)$', 'fdp'),
-        (r'^AP-(\d+)$', 'ap'),
-        (r'^RPT-(\d+)$', 'report'),
-    ]
-
-    for pattern, doc_type in patterns:
-        match = re.match(pattern, doc_id)
-        if match:
-            return doc_type, int(match.group(1))
-
-    raise ValueError(f"Invalid document ID: {doc_id}. Expected format: ADR-001, FDP-002, AP-003, or RPT-001")
+def archive_note(old_status: str | None) -> str:
+    """Build the note left under an archived document's title."""
+    was = f" (was {old_status.strip().lower()})" if old_status else ""
+    return f"Archived {date.today().isoformat()}{was}. {get_archive_note()}"
 
 
-def find_document(doc_type: str, number: int, project_dir: Path) -> Path | None:
-    """Find a document by type and number (not in archive)."""
-    type_config = get_type_config(doc_type)
-    planning_root = project_dir / get_planning_root()
-    doc_dir = planning_root / type_config['dir']
+def mark_archived(content: str) -> str:
+    """Set a document's status to archived and leave the archive note in it."""
+    old_status = document_status(content)
+    try:
+        content = set_status(content, ARCHIVED_STATUS, {'archived': date.today()})
+    except ValueError:
+        pass  # a document with no status still gets the note
+    return insert_note_under_title(content, archive_note(old_status))
 
-    if not doc_dir.exists():
-        return None
-
-    # Build pattern based on type config
-    prefix = type_config.get('prefix', '')
-    if prefix:
-        pattern = re.compile(rf'^{re.escape(prefix)}(\d+)-.*\.md$')
-    else:
-        pattern = re.compile(r'^(\d+)-.*\.md$')
-
-    for f in doc_dir.iterdir():
-        if f.is_file():
-            match = pattern.match(f.name)
-            if match and int(match.group(1)) == number:
-                return f
-
-    return None
-
-
-def update_status_in_content(content: str, new_status: str = "Archived") -> str:
-    """Update status in both frontmatter and body."""
-    today = date.today().isoformat()
-
-    # Parse frontmatter
-    frontmatter, body = parse_frontmatter(content)
-
-    # Update frontmatter if present
-    if frontmatter:
-        frontmatter['status'] = new_status.lower()
-        frontmatter['modified'] = today
-        content = render_frontmatter(frontmatter) + body
-
-    # Update body status section
-    status_pattern = r'(## Status\s*\n\s*\n?)([^\n#]+)'
-
-    def replace_status(match):
-        prefix = match.group(1)
-        return f"{prefix}{new_status}"
-
-    content, count = re.subn(status_pattern, replace_status, content)
-
-    # Add Archived date section if not present
-    if '## Archived' not in content:
-        archived_section = f"\n## Archived\n\n{today}\n"
-
-        # Find position after Status section
-        status_match = re.search(r'## Status\s*\n\s*\n?[^\n#]+\n', content)
-        if status_match:
-            insert_pos = status_match.end()
-            content = content[:insert_pos] + archived_section + content[insert_pos:]
-
-    return content
 
 
 def regenerate_archive_index(type_dir: Path, doc_type: str) -> Path | None:
@@ -141,25 +78,20 @@ def regenerate_archive_index(type_dir: Path, doc_type: str) -> Path | None:
     Returns:
         Path to ARCHIVE.md, or None if no archive directory exists
     """
-    archive_dir = type_dir / 'archive'
+    archive_dir = type_dir / ARCHIVE_DIR
     if not archive_dir.exists():
         return None
 
     type_config = get_type_config(doc_type)
     type_name = type_config.get('name', doc_type.upper())
     id_format = type_config.get('id_format', '{number:03d}')
-    prefix = type_config.get('prefix', '')
 
-    # Build filename patterns — primary (current convention) + fallback (old conventions)
-    patterns = []
-    if prefix:
-        patterns.append(re.compile(rf'^{re.escape(prefix)}(\d+)-.*\.md$'))
-    else:
-        patterns.append(re.compile(r'^(\d+)-.*\.md$'))
-    # Fallback: match any ID-like prefix (e.g., ADR-0001-...) for old naming conventions
-    id_prefix = id_format.split('-')[0] if '-' in id_format.split('{')[0] else ''
-    if id_prefix:
-        patterns.append(re.compile(rf'^{re.escape(id_prefix)}-(\d+)-.*\.md$'))
+    # Filename patterns: the current convention, then the ID's letters as a
+    # prefix (e.g., ADR-0001-...) for files named by an older convention
+    patterns = [
+        get_filename_pattern(doc_type),
+        re.compile(rf'^{re.escape(get_id_prefix(doc_type))}-(\d+)-.*\.md$'),
+    ]
 
     # Collect archived document info
     entries = []
@@ -200,10 +132,10 @@ def regenerate_archive_index(type_dir: Path, doc_type: str) -> Path | None:
         archived_date = ''
         if frontmatter:
             status = str(frontmatter.get('status', '')).title()
-            archived_date = str(frontmatter.get('modified', ''))
+            archived_date = str(frontmatter.get('archived') or frontmatter.get('modified', ''))
 
         # Relative path from type_dir to archive file
-        rel_path = f'archive/{f.name}'
+        rel_path = f'{ARCHIVE_DIR}/{f.name}'
 
         entries.append({
             'number': number,
@@ -246,33 +178,23 @@ def regenerate_archive_index(type_dir: Path, doc_type: str) -> Path | None:
 
 def archive_document(doc_id: str, project_dir: Path) -> Path:
     """Archive a planning document and regenerate the archive index."""
-    doc_type, number = parse_doc_id(doc_id)
+    doc_type, _ = parse_doc_id(doc_id)
 
-    # Find the document
-    filepath = find_document(doc_type, number, project_dir)
-    if not filepath:
-        raise FileNotFoundError(f"Document not found: {doc_id}")
-
-    # Check if already archived
-    if 'archive' in filepath.parts:
+    filepath = find_document_by_id(doc_id, project_dir)
+    if is_archived(filepath):
         raise ValueError(f"Document is already archived: {filepath}")
 
-    # Update status
-    content = filepath.read_text()
-    new_content = update_status_in_content(content)
-    filepath.write_text(new_content)
-
-    # Create archive directory
     type_dir = filepath.parent
-    archive_dir = type_dir / 'archive'
-    archive_dir.mkdir(exist_ok=True)
-
-    # Move to archive
+    archive_dir = type_dir / ARCHIVE_DIR
     new_path = archive_dir / filepath.name
     if new_path.exists():
         raise FileExistsError(f"Archive destination already exists: {new_path}")
 
-    shutil.move(str(filepath), str(new_path))
+    new_content = mark_archived(filepath.read_text())
+
+    archive_dir.mkdir(exist_ok=True)
+    new_path.write_text(new_content)
+    filepath.unlink()
 
     # Regenerate archive index
     index_path = regenerate_archive_index(type_dir, doc_type)
@@ -289,7 +211,7 @@ def main():
     parser.add_argument(
         'doc_id',
         nargs='?',
-        help='Document ID (e.g., ADR-001, FDP-002, AP-003, RPT-001)'
+        help=f'Document ID (e.g., {id_examples()})'
     )
     parser.add_argument(
         '--regenerate-index',
@@ -298,7 +220,7 @@ def main():
     )
     parser.add_argument(
         '--type', '-t',
-        choices=['adr', 'fdp', 'ap', 'report'],
+        choices=list(get_all_types().keys()),
         help='Document type to regenerate index for (with --regenerate-index)'
     )
     parser.add_argument(
