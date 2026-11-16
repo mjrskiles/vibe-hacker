@@ -1,7 +1,7 @@
 {
   "name": "librarian",
-  "version": "0.4.0",
-  "description": "Structured planning documents (ADRs, FDPs, Action Plans) with protected paths",
+  "version": "0.5.0",
+  "description": "Structured planning documents (ADRs, FDPs, Action Plans, Reports), logs and a roadmap, with protected paths",
   "author": {
     "name": "Michael Skiles",
     "email": "michael@soundbytelabs.net"
