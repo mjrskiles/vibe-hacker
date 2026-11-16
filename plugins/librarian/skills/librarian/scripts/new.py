@@ -19,7 +19,6 @@ Examples:
 """
 
 import argparse
-import os
 import re
 import sys
 from datetime import date
@@ -27,12 +26,15 @@ from pathlib import Path
 from string import Template
 
 from config import (
-    get_project_dir,
-    get_all_types,
-    get_type_config,
-    get_doc_dir,
-    get_template_path,
+    ARCHIVE_DIR,
     format_filename,
+    get_all_types,
+    get_doc_dir,
+    get_filename_pattern,
+    get_project_dir,
+    get_template_path,
+    get_type_config,
+    is_retired,
 )
 
 
@@ -46,87 +48,54 @@ def slugify(title: str) -> str:
     return slug
 
 
-def get_number_pattern(doc_type: str) -> str:
-    """Get regex pattern to extract number from filename."""
-    type_config = get_type_config(doc_type)
-    prefix = type_config.get('prefix', '')
-
-    if prefix:
-        # Pattern like FDP-001-slug.md or AP-001-slug.md
-        return rf'^{re.escape(prefix)}(\d+)-.*\.md$'
-    else:
-        # Pattern like 001-slug.md (ADRs)
-        return r'^(\d+)-.*\.md$'
-
-
-def find_next_number(doc_dir: Path, pattern: str) -> int:
-    """Find the next available document number."""
-    if not doc_dir.exists():
-        return 1
-
+def find_next_number(doc_dir: Path, pattern: re.Pattern) -> int:
+    """Find the next available document number, counting archived documents."""
     max_num = 0
-    regex = re.compile(pattern)
-
-    for f in doc_dir.iterdir():
-        if f.is_file():
-            match = regex.match(f.name)
+    for directory in (doc_dir, doc_dir / ARCHIVE_DIR):
+        if not directory.is_dir():
+            continue
+        for f in directory.iterdir():
+            match = pattern.match(f.name) if f.is_file() else None
             if match:
-                num = int(match.group(1))
-                max_num = max(max_num, num)
-
-    # Also check archive directory
-    archive_dir = doc_dir / 'archive'
-    if archive_dir.exists():
-        for f in archive_dir.iterdir():
-            if f.is_file():
-                match = regex.match(f.name)
-                if match:
-                    num = int(match.group(1))
-                    max_num = max(max_num, num)
-
+                max_num = max(max_num, int(match.group(1)))
     return max_num + 1
 
 
-def load_template(doc_type: str) -> str:
+def load_template(doc_type: str, project_dir: Path) -> str:
     """Load template content for a document type."""
-    template_path = get_template_path(doc_type)
-
-    if template_path and template_path.exists():
-        return template_path.read_text()
-
-    # Fallback: try to find template relative to script
-    type_config = get_type_config(doc_type)
-    template_name = type_config.get('template', f'{doc_type}.md')
-
-    script_dir = Path(__file__).parent.parent / 'templates'
-    fallback_path = script_dir / template_name
-
-    if fallback_path.exists():
-        return fallback_path.read_text()
-
-    # Try CLAUDE_PLUGIN_ROOT
-    plugin_root = os.environ.get('CLAUDE_PLUGIN_ROOT')
-    if plugin_root:
-        plugin_path = Path(plugin_root) / 'skills' / 'planning' / 'templates' / template_name
-        if plugin_path.exists():
-            return plugin_path.read_text()
-
-    raise FileNotFoundError(f"Template not found for type: {doc_type}")
+    template_path = get_template_path(doc_type, project_dir)
+    if template_path is None:
+        raise FileNotFoundError(f"Template not found for type: {doc_type}")
+    return template_path.read_text()
 
 
 def create_document(doc_type: str, title: str, project_dir: Path) -> Path:
-    """Create a new planning document."""
-    type_config = get_type_config(doc_type)
+    """
+    Create a new planning document.
+
+    Raises:
+        ValueError: If the type is retired or the title has no usable characters
+        FileExistsError: If the document's file already exists
+        FileNotFoundError: If the type has no template
+    """
+    if is_retired(doc_type):
+        name = get_type_config(doc_type).get('name', doc_type.upper())
+        raise ValueError(
+            f"{name} is a retired document type (planning.retired): "
+            "new documents of this type are not created."
+        )
+
+    slug = slugify(title)
+    if not slug:
+        raise ValueError(f"Title has no characters usable in a filename: {title!r}")
 
     doc_dir = project_dir / get_doc_dir(doc_type)
     doc_dir.mkdir(parents=True, exist_ok=True)
 
     # Find next number
-    pattern = get_number_pattern(doc_type)
-    next_num = find_next_number(doc_dir, pattern)
+    next_num = find_next_number(doc_dir, get_filename_pattern(doc_type))
 
     # Create filename using config format
-    slug = slugify(title)
     filename = format_filename(doc_type, next_num, slug)
     filepath = doc_dir / filename
 
@@ -135,7 +104,7 @@ def create_document(doc_type: str, title: str, project_dir: Path) -> Path:
         raise FileExistsError(f"File already exists: {filepath}")
 
     # Read template
-    template_content = load_template(doc_type)
+    template_content = load_template(doc_type, project_dir)
 
     # Substitute variables
     # NUMBER is zero-padded for display in document
@@ -183,10 +152,7 @@ def main():
     try:
         filepath = create_document(args.type, args.title, args.project_dir)
         print(f"Created: {filepath}")
-    except FileExistsError as e:
-        print(f"Error: {e}", file=sys.stderr)
-        sys.exit(1)
-    except FileNotFoundError as e:
+    except (FileExistsError, FileNotFoundError, ValueError) as e:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
 

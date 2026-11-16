@@ -18,119 +18,43 @@ Examples:
 """
 
 import argparse
-import re
 import sys
-from datetime import date
 from pathlib import Path
 
 from config import (
-    get_project_dir,
-    get_planning_root,
-    get_type_config,
+    find_document_by_id,
     format_doc_id,
+    get_filename_pattern,
+    get_project_dir,
+    parse_doc_id,
 )
 from frontmatter import (
+    append_addendum,
     parse_frontmatter,
     render_frontmatter,
-    has_addenda_section,
-    ADDENDA_SEPARATOR,
+    set_status,
+    stamp_modified,
 )
-from new import create_document, slugify
+from new import create_document
 
-
-def parse_doc_id(doc_id: str) -> tuple[str, int]:
-    """Parse a document ID into type and number."""
-    doc_id = doc_id.upper()
-
-    patterns = [
-        (r'^ADR-(\d+)$', 'adr'),
-        (r'^FDP-(\d+)$', 'fdp'),
-        (r'^AP-(\d+)$', 'ap'),
-        (r'^RPT-(\d+)$', 'report'),
-    ]
-
-    for pattern, doc_type in patterns:
-        match = re.match(pattern, doc_id)
-        if match:
-            return doc_type, int(match.group(1))
-
-    raise ValueError(f"Invalid document ID: {doc_id}")
-
-
-def find_document(doc_type: str, number: int, project_dir: Path) -> Path | None:
-    """Find a document by type and number."""
-    type_config = get_type_config(doc_type)
-    planning_root = project_dir / get_planning_root()
-    doc_dir = planning_root / type_config['dir']
-
-    if not doc_dir.exists():
-        return None
-
-    prefix = type_config.get('prefix', '')
-    if prefix:
-        pattern = re.compile(rf'^{re.escape(prefix)}(\d+)-.*\.md$')
-    else:
-        pattern = re.compile(r'^(\d+)-.*\.md$')
-
-    # Check main directory
-    for f in doc_dir.iterdir():
-        if f.is_file():
-            match = pattern.match(f.name)
-            if match and int(match.group(1)) == number:
-                return f
-
-    # Check archive
-    archive_dir = doc_dir / 'archive'
-    if archive_dir.exists():
-        for f in archive_dir.iterdir():
-            if f.is_file():
-                match = pattern.match(f.name)
-                if match and int(match.group(1)) == number:
-                    return f
-
-    return None
+SUPERSEDED_STATUS = 'superseded'
 
 
 def update_old_document(filepath: Path, new_doc_id: str) -> None:
     """Update the old document with superseded_by and add addendum."""
-    content = filepath.read_text()
-    today = date.today().isoformat()
-
-    frontmatter, body = parse_frontmatter(content)
-
-    if frontmatter:
-        frontmatter['superseded_by'] = new_doc_id
-        frontmatter['status'] = 'superseded'
-        frontmatter['modified'] = today
-        content = render_frontmatter(frontmatter) + body
-
-    # Update status in body
-    status_pattern = r'(## Status\s*\n\s*\n?)([^\n#]+)'
-    content = re.sub(status_pattern, r'\1Superseded', content)
-
-    # Add addendum
-    addendum_entry = f"\n### {today}: Superseded\n\nThis document has been superseded by {new_doc_id}.\n"
-
-    if has_addenda_section(content):
-        content = content.rstrip() + addendum_entry
-    else:
-        content = content.rstrip() + ADDENDA_SEPARATOR + addendum_entry.lstrip('\n')
-
+    content = set_status(filepath.read_text(), SUPERSEDED_STATUS, {'superseded_by': new_doc_id})
+    content = append_addendum(content, "Superseded", f"This document has been superseded by {new_doc_id}.")
     filepath.write_text(content)
 
 
 def update_new_document(filepath: Path, old_doc_id: str) -> None:
     """Update the new document with supersedes field."""
-    content = filepath.read_text()
-    today = date.today().isoformat()
-
-    frontmatter, body = parse_frontmatter(content)
+    frontmatter, body = parse_frontmatter(filepath.read_text())
 
     if frontmatter:
         frontmatter['supersedes'] = old_doc_id
-        frontmatter['modified'] = today
-        content = render_frontmatter(frontmatter) + body
-        filepath.write_text(content)
+        stamp_modified(frontmatter)
+        filepath.write_text(render_frontmatter(frontmatter) + body)
 
 
 def supersede_document(old_doc_id: str, new_title: str, project_dir: Path) -> tuple[Path, Path]:
@@ -140,12 +64,8 @@ def supersede_document(old_doc_id: str, new_title: str, project_dir: Path) -> tu
     Returns:
         Tuple of (new_document_path, old_document_path)
     """
-    doc_type, number = parse_doc_id(old_doc_id)
-
-    # Find old document
-    old_filepath = find_document(doc_type, number, project_dir)
-    if not old_filepath:
-        raise FileNotFoundError(f"Document not found: {old_doc_id}")
+    doc_type, _ = parse_doc_id(old_doc_id)
+    old_filepath = find_document_by_id(old_doc_id, project_dir)
 
     # Check if old doc is already superseded
     old_content = old_filepath.read_text()
@@ -164,13 +84,7 @@ def supersede_document(old_doc_id: str, new_title: str, project_dir: Path) -> tu
 
     if not new_doc_id:
         # Fallback: extract from filename
-        new_filename = new_filepath.name
-        type_config = get_type_config(doc_type)
-        prefix = type_config.get('prefix', '')
-        if prefix:
-            match = re.match(rf'^{re.escape(prefix)}(\d+)-', new_filename)
-        else:
-            match = re.match(r'^(\d+)-', new_filename)
+        match = get_filename_pattern(doc_type).match(new_filepath.name)
         if match:
             new_doc_id = format_doc_id(doc_type, int(match.group(1)))
 

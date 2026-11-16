@@ -16,49 +16,33 @@ related: []
 
 Proposed
 
-## Summary
+## Goal
 
-Brief description of the feature and what it accomplishes.
+What this step is for, in a few sentences.
 
-## Motivation
+## Context
 
-Why is this feature needed? What problem does it solve?
+Decisions already made that bear on this step, quoted, each with its date and source.
 
-## Detailed Design
+## Options
 
-### Overview
+The approaches considered and what each costs.
 
-High-level description of the approach.
+### Recommendation (assistant, not yet approved)
 
-### Components
+Which option, and why.
 
-Break down the feature into its main parts.
+## Questions
 
-### Implementation Details
+1. What the user has to decide before the work starts.
 
-Technical details, data structures, algorithms, etc.
+## Steps
 
-## File Changes
+The issues that carry the work.
 
-| File | Change | Description |
-|------|--------|-------------|
-| `path/to/file` | Create/Modify/Delete | What changes |
+## Done when
 
-## Implementation Phases
-
-### Phase 1: MVP
-- First set of deliverables
-
-### Phase 2: Enhancements
-- Follow-up work
-
-## Open Questions
-
-What remains to be determined?
-
-## References
-
-Links to related documents, issues, or prior art.
+How to tell that the step is finished.
 
 ---
 

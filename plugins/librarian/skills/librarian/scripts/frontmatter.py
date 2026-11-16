@@ -6,7 +6,7 @@ and render frontmatter back to YAML format.
 """
 
 import re
-from datetime import datetime
+from datetime import date
 from typing import Optional
 
 # Try to import yaml, fall back to basic parsing if not available
@@ -22,6 +22,12 @@ FRONTMATTER_PATTERN = re.compile(r'^---\n(.*?)\n---\n', re.DOTALL)
 # Addenda section markers
 ADDENDA_SEPARATOR = "\n\n---\n\n## Addenda\n"
 ADDENDA_PATTERN = re.compile(r'\n---\n\n## Addenda\n', re.IGNORECASE)
+
+# The first top-level Status heading and the blank lines under it
+STATUS_HEADING_PATTERN = re.compile(r'^## Status[ \t]*\n(?:[ \t]*\n)*', re.MULTILINE)
+
+# A Status paragraph that is only the status: one to three words
+BARE_STATUS_PATTERN = re.compile(r'[A-Za-z]+(?: [A-Za-z]+){0,2}')
 
 
 def parse_frontmatter(content: str) -> tuple[dict, str]:
@@ -149,6 +155,29 @@ def has_addenda_section(content: str) -> bool:
     return bool(ADDENDA_PATTERN.search(content))
 
 
+def stamp_modified(frontmatter: dict) -> None:
+    """
+    Set a frontmatter dictionary's modified date to today.
+
+    The value is a date, not a string, so that YAML writes it unquoted.
+    """
+    frontmatter['modified'] = date.today()
+
+
+def format_entry(title: str, body: str) -> str:
+    """
+    Format a dated entry, as used for addenda and log entries.
+
+    Args:
+        title: Entry title (without date)
+        body: Entry content
+
+    Returns:
+        The entry: a level-3 heading with today's date, then the body
+    """
+    return f"### {date.today().isoformat()}: {title}\n\n{body.rstrip()}\n"
+
+
 def append_addendum(content: str, title: str, body: str) -> str:
     """
     Add an addendum to a document.
@@ -164,21 +193,114 @@ def append_addendum(content: str, title: str, body: str) -> str:
     Returns:
         Updated document content
     """
-    date = datetime.now().strftime("%Y-%m-%d")
-    addendum_entry = f"\n### {date}: {title}\n\n{body}\n"
-
-    # Update modified date in frontmatter
     frontmatter, doc_body = parse_frontmatter(content)
     if frontmatter:
-        frontmatter['modified'] = date
+        stamp_modified(frontmatter)
         content = render_frontmatter(frontmatter) + doc_body
 
+    entry = format_entry(title, body)
     if has_addenda_section(content):
-        # Append to existing addenda section
-        return content.rstrip() + addendum_entry
-    else:
-        # Create addenda section
-        return content.rstrip() + ADDENDA_SEPARATOR + addendum_entry.lstrip('\n')
+        return content.rstrip() + "\n\n" + entry
+    return content.rstrip() + ADDENDA_SEPARATOR + "\n" + entry
+
+
+def set_body_status(content: str, new_status: str) -> tuple[str, bool]:
+    """
+    Set the status shown under a document's first "## Status" heading.
+
+    A paragraph that is only a status (one line of one to three words) is
+    replaced. Any other paragraph is prose and is kept whole: the status goes
+    on a line of its own above it. Later "## Status" headings and deeper
+    headings such as "### Status" are left alone.
+
+    Args:
+        content: Full document content
+        new_status: Status to show (any case)
+
+    Returns:
+        Tuple of (updated content, whether a Status section was found)
+    """
+    heading = STATUS_HEADING_PATTERN.search(content)
+    if not heading:
+        return content, False
+
+    shown = new_status.strip().capitalize()
+    start = heading.end()
+    rest = content[start:]
+
+    paragraph = []
+    for line in rest.split('\n'):
+        if not line.strip() or line.startswith('#'):
+            break
+        paragraph.append(line)
+
+    if len(paragraph) == 1 and BARE_STATUS_PATTERN.fullmatch(paragraph[0].strip()):
+        return content[:start] + shown + rest[len(paragraph[0]):], True
+    return content[:start] + shown + "\n\n" + rest, True
+
+
+def document_status(content: str) -> Optional[str]:
+    """
+    Get a document's status: frontmatter first, then the Status section.
+
+    Returns:
+        Status string or None if the document states none
+    """
+    frontmatter, _ = parse_frontmatter(content)
+    if frontmatter and frontmatter.get('status'):
+        return str(frontmatter['status'])
+    return extract_status_from_body(content)
+
+
+def set_status(content: str, new_status: str, extra_fields: Optional[dict] = None) -> str:
+    """
+    Set a document's status in its frontmatter and its Status section.
+
+    Args:
+        content: Full document content
+        new_status: New status (stored lowercase in frontmatter)
+        extra_fields: Further frontmatter fields to set in the same write
+
+    Returns:
+        Updated document content
+
+    Raises:
+        ValueError: If the document has neither frontmatter nor a Status section
+    """
+    frontmatter, body = parse_frontmatter(content)
+    if frontmatter:
+        frontmatter['status'] = new_status.strip().lower()
+        frontmatter.update(extra_fields or {})
+        stamp_modified(frontmatter)
+        content = render_frontmatter(frontmatter) + body
+
+    content, found = set_body_status(content, new_status)
+    if not frontmatter and not found:
+        raise ValueError("Document has neither frontmatter nor a Status section")
+    return content
+
+
+def insert_note_under_title(content: str, note: str) -> str:
+    """
+    Put a one-line blockquote under a document's H1 heading.
+
+    Without an H1 the note goes at the top of the body.
+
+    Args:
+        content: Full document content
+        note: Note text, one line
+
+    Returns:
+        Updated document content
+    """
+    block = f"> {note}\n"
+    frontmatter = FRONTMATTER_PATTERN.match(content)
+    body_start = frontmatter.end() if frontmatter else 0
+
+    title = re.compile(r'^# [^\n]*\n', re.MULTILINE).search(content, body_start)
+    if title:
+        return content[:title.end()] + "\n" + block + content[title.end():]
+    return content[:body_start] + block + "\n" + content[body_start:].lstrip('\n')
 
 
 def create_frontmatter(
@@ -203,7 +325,7 @@ def create_frontmatter(
     Returns:
         Frontmatter dictionary
     """
-    today = datetime.now().strftime("%Y-%m-%d")
+    today = date.today().isoformat()
     return {
         'type': doc_type,
         'id': doc_id,
@@ -245,7 +367,7 @@ def extract_title_from_body(content: str) -> Optional[str]:
         Title string (without ID prefix) or None if not found
     """
     # Look for # heading, optionally with ID prefix
-    title_match = re.search(r'^# (?:(?:ADR|FDP|AP|RPT)-\d+:\s*)?(.+)$', content, re.MULTILINE)
+    title_match = re.search(r'^# (?:[A-Z]+-\d+:\s*)?(.+)$', content, re.MULTILINE)
     if title_match:
         return title_match.group(1).strip()
     return None

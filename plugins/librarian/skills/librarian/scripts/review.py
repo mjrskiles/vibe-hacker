@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """
-Review open planning documents — everything not in a terminal state.
+Review planning documents that need attention.
+
+Two lists: open documents (everything not in a terminal state), and finished
+documents that are still live (status is one the type archives on).
 
 Usage:
     review.py [--type TYPE] [--project-dir PATH]
@@ -17,10 +20,13 @@ import sys
 from pathlib import Path
 
 from config import (
-    get_project_dir,
-    get_planning_root,
     get_all_types,
+    get_filename_pattern,
+    get_planning_root,
+    get_project_dir,
     get_type_config,
+    is_archive_trigger,
+    is_retired,
 )
 from frontmatter import parse_frontmatter, extract_status_from_body, extract_title_from_body
 
@@ -35,16 +41,6 @@ def get_terminal_statuses(doc_type: str) -> set[str]:
     for s in statuses.get('archive_triggers', []):
         terminal.add(s.lower())
     return terminal
-
-
-def get_number_pattern(doc_type: str) -> re.Pattern:
-    """Get regex pattern to extract number from filename."""
-    type_config = get_type_config(doc_type)
-    prefix = type_config.get('prefix', '')
-    if prefix:
-        return re.compile(rf'^{re.escape(prefix)}(\d+)-(.*)\.md$')
-    else:
-        return re.compile(r'^(\d+)-(.*)\.md$')
 
 
 def extract_summary(filepath: Path) -> str:
@@ -62,8 +58,8 @@ def extract_summary(filepath: Path) -> str:
         # Skip H1 heading
         text = re.sub(r'^#\s+[^\n]+\n*', '', text, count=1)
 
-        # Skip ## Status section (heading + single status line + blank lines)
-        text = re.sub(r'^## Status\s*\n+\S[^\n]*\n*', '', text, count=1)
+        # Skip the ## Status section, up to the next heading
+        text = re.sub(r'^## Status[ \t]*\n.*?(?=^#|\Z)', '', text, count=1, flags=re.DOTALL | re.MULTILINE)
 
         # Skip blank lines
         text = text.lstrip('\n')
@@ -123,9 +119,14 @@ def extract_modified(filepath: Path) -> str:
         return '?'
 
 
-def find_open_docs(project_dir: Path, doc_type: str | None = None) -> list[dict]:
-    """Find all documents not in terminal states."""
-    documents = []
+def find_docs(project_dir: Path, doc_type: str | None = None) -> tuple[list[dict], list[dict]]:
+    """
+    Find the live documents that need attention.
+
+    Returns:
+        Tuple of (open documents, finished documents not yet archived)
+    """
+    open_docs, unarchived = [], []
     all_types = get_all_types()
     types_to_check = [doc_type] if doc_type else list(all_types.keys())
 
@@ -141,28 +142,22 @@ def find_open_docs(project_dir: Path, doc_type: str | None = None) -> list[dict]
             continue
 
         terminal = get_terminal_statuses(dtype)
-        pattern = get_number_pattern(dtype)
+        pattern = get_filename_pattern(dtype)
         id_format = type_config.get('id_format', '{number:03d}')
 
         for f in sorted(doc_dir.iterdir()):
-            if not f.is_file() or not f.name.endswith('.md'):
-                continue
-            if f.name.startswith('ARCHIVE'):
-                continue
-
-            match = pattern.match(f.name)
+            match = pattern.match(f.name) if f.is_file() else None
             if not match:
                 continue
 
-            number = int(match.group(1))
             status = extract_status(f)
-
-            if status.lower() in terminal:
+            archivable = is_archive_trigger(dtype, status)
+            if status.lower() in terminal and not archivable:
                 continue
 
-            documents.append({
-                'id': id_format.format(number=number),
-                'type': dtype.upper(),
+            (unarchived if archivable else open_docs).append({
+                'id': id_format.format(number=int(match.group(1))),
+                'type': dtype.upper() + (' (retired type)' if is_retired(dtype) else ''),
                 'status': status,
                 'title': extract_title(f),
                 'summary': extract_summary(f),
@@ -170,20 +165,19 @@ def find_open_docs(project_dir: Path, doc_type: str | None = None) -> list[dict]
                 'path': str(f.relative_to(project_dir)),
             })
 
-    return documents
+    return open_docs, unarchived
 
 
-def format_review(documents: list[dict]) -> str:
-    """Format open documents as a review summary."""
-    if not documents:
-        return "All clear — no open planning documents."
+def format_review(open_docs: list[dict], unarchived: list[dict]) -> str:
+    """Format the two lists as a review summary."""
+    if not open_docs and not unarchived:
+        return "All clear: no open planning documents, none waiting to be archived."
 
-    # Group by type
+    lines = [f"Open planning documents: {len(open_docs)} total\n"]
+
     by_type: dict[str, list[dict]] = {}
-    for doc in documents:
+    for doc in open_docs:
         by_type.setdefault(doc['type'], []).append(doc)
-
-    lines = [f"Open planning documents: {len(documents)} total\n"]
 
     for doc_type, docs in by_type.items():
         lines.append(f"## {doc_type} ({len(docs)})\n")
@@ -198,6 +192,15 @@ def format_review(documents: list[dict]) -> str:
             lines.append(f"           {doc['summary']}")
             lines.append('')
 
+    if unarchived:
+        lines.append(f"Finished, not archived: {len(unarchived)} total\n")
+        for doc in unarchived:
+            title = doc['title']
+            if len(title) > 60:
+                title = title[:57] + '...'
+            lines.append(f"  {doc['id']}  [{doc['status']}]  {title}")
+        lines.append('')
+
     return '\n'.join(lines)
 
 
@@ -206,7 +209,7 @@ def main():
     type_choices = list(all_types.keys())
 
     parser = argparse.ArgumentParser(
-        description='Review open planning documents — everything not in a terminal state.'
+        description='Review planning documents that are open, or finished and not yet archived.'
     )
     parser.add_argument(
         '--type', '-t',
@@ -221,8 +224,7 @@ def main():
     )
 
     args = parser.parse_args()
-    documents = find_open_docs(args.project_dir, doc_type=args.type)
-    print(format_review(documents))
+    print(format_review(*find_docs(args.project_dir, doc_type=args.type)))
 
 
 if __name__ == '__main__':

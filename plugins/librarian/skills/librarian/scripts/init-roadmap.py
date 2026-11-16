@@ -12,21 +12,13 @@ The roadmap is created at <planning_root>/roadmap.md
 """
 
 import argparse
-import os
 import sys
 from datetime import date
 from pathlib import Path
 
-from config import get_planning_root, get_project_dir
+from config import find_template, get_planning_root, get_project_dir
 
-
-def get_template_path() -> Path:
-    """Get path to roadmap template."""
-    plugin_root = os.environ.get('CLAUDE_PLUGIN_ROOT', '')
-    if plugin_root:
-        return Path(plugin_root) / 'skills' / 'planning' / 'templates' / 'roadmap.md'
-    # Fallback: relative to this script
-    return Path(__file__).parent.parent / 'templates' / 'roadmap.md'
+ROADMAP_TEMPLATE = 'roadmap.md'
 
 
 def init_roadmap(project_dir: Path, force: bool = False) -> Path:
@@ -39,9 +31,9 @@ def init_roadmap(project_dir: Path, force: bool = False) -> Path:
         print("Use --force to overwrite")
         sys.exit(1)
 
-    template_path = get_template_path()
-    if not template_path.exists():
-        print(f"Template not found: {template_path}")
+    template_path = find_template(ROADMAP_TEMPLATE, project_dir)
+    if template_path is None:
+        print(f"Template not found: {ROADMAP_TEMPLATE}")
         sys.exit(1)
 
     # Read template and substitute date
@@ -70,7 +62,7 @@ def main():
     parser.add_argument(
         '--project-dir',
         type=Path,
-        default=Path(os.environ.get('CLAUDE_PROJECT_DIR', '.')),
+        default=get_project_dir(),
         help='Project directory (default: CLAUDE_PROJECT_DIR or current dir)'
     )
 

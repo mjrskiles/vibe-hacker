@@ -74,7 +74,7 @@ age_days=$(( ( $(date +%s) - $(last_changed) ) / 86400 ))
 echo "ROADMAP UPDATE REMINDER - Review before compaction" >&2
 
 # Inject reminder via systemMessage (PreCompact has no hookSpecificOutput support)
-context="ROADMAP UPDATE REMINDER: Before context compaction, please review and update the project roadmap at $PLANNING_ROOT/roadmap.md:\n\n1. Move completed items to 'Recently Completed' section\n2. Update 'Immediate' goals based on current progress\n3. Adjust priorities in 'Medium Term' and 'Long Term' as needed\n4. Update the 'Last updated' date"
+context="ROADMAP UPDATE REMINDER: Before context compaction, please review the project roadmap at $PLANNING_ROOT/roadmap.md:\n\n1. 'Now' and 'Next' match the current work\n2. The 'Last updated' date is current"
 context=$(echo -e "$context" | jq -Rs '.')
 
 cat <<JSON

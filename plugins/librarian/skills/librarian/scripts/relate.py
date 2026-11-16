@@ -15,79 +15,11 @@ to the second document.
 """
 
 import argparse
-import re
 import sys
-from datetime import date
 from pathlib import Path
 
-from config import (
-    get_project_dir,
-    get_planning_root,
-    get_type_config,
-)
-from frontmatter import parse_frontmatter, render_frontmatter
-
-
-def parse_doc_id(doc_id: str) -> tuple[str, int]:
-    """Parse a document ID into type and number."""
-    doc_id = doc_id.upper()
-
-    patterns = [
-        (r'^ADR-(\d+)$', 'adr'),
-        (r'^FDP-(\d+)$', 'fdp'),
-        (r'^AP-(\d+)$', 'ap'),
-        (r'^RPT-(\d+)$', 'report'),
-    ]
-
-    for pattern, doc_type in patterns:
-        match = re.match(pattern, doc_id)
-        if match:
-            return doc_type, int(match.group(1))
-
-    raise ValueError(f"Invalid document ID: {doc_id}")
-
-
-def find_document(doc_type: str, number: int, project_dir: Path) -> Path | None:
-    """Find a document by type and number."""
-    type_config = get_type_config(doc_type)
-    planning_root = project_dir / get_planning_root()
-    doc_dir = planning_root / type_config['dir']
-
-    if not doc_dir.exists():
-        return None
-
-    prefix = type_config.get('prefix', '')
-    if prefix:
-        pattern = re.compile(rf'^{re.escape(prefix)}(\d+)-.*\.md$')
-    else:
-        pattern = re.compile(r'^(\d+)-.*\.md$')
-
-    # Check main directory
-    for f in doc_dir.iterdir():
-        if f.is_file():
-            match = pattern.match(f.name)
-            if match and int(match.group(1)) == number:
-                return f
-
-    # Check archive
-    archive_dir = doc_dir / 'archive'
-    if archive_dir.exists():
-        for f in archive_dir.iterdir():
-            if f.is_file():
-                match = pattern.match(f.name)
-                if match and int(match.group(1)) == number:
-                    return f
-
-    return None
-
-
-def find_document_by_id(doc_id: str, project_dir: Path) -> Path:
-    """Find a document by its full ID."""
-    doc_type, number = parse_doc_id(doc_id)
-    filepath = find_document(doc_type, number, project_dir)
-    if not filepath:
-        raise FileNotFoundError(f"Document not found: {doc_id}")
-    return filepath
+from config import find_document_by_id, get_project_dir
+from frontmatter import parse_frontmatter, render_frontmatter, stamp_modified
 
 
 def add_related(filepath: Path, related_id: str) -> bool:
@@ -97,7 +29,6 @@ def add_related(filepath: Path, related_id: str) -> bool:
     Returns True if added, False if already present.
     """
     content = filepath.read_text()
-    today = date.today().isoformat()
 
     frontmatter, body = parse_frontmatter(content)
 
@@ -120,7 +51,7 @@ def add_related(filepath: Path, related_id: str) -> bool:
     # Add the new related ID
     related.append(related_id_upper)
     frontmatter['related'] = related
-    frontmatter['modified'] = today
+    stamp_modified(frontmatter)
 
     # Write back
     new_content = render_frontmatter(frontmatter) + body
